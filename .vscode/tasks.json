@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Pester Tests",
+            "type": "shell",
+            "command": "powershell.exe",
+            "args": [
+                "-noprofile",
+                "-command",
+                {
+                    "quoting": "weak",
+                    "value": "Import-Module '${workspaceFolder}/build/debug.psm1' -ArgumentList $true; Import-Module Pester -MinimumVersion 5.0; Invoke-Pester -Configuration @{Run=@{Path='${workspaceFolder}/tests/'};Output=@{Verbosity='Detailed'}}"
+                }
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": "$pester"
+        }
+    ]
+}
