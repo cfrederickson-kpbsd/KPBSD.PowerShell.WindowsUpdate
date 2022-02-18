@@ -6,11 +6,11 @@ function Get-WindowsUpdateHistory {
         [SupportsWildcards()]
         [Alias('Name')]
         [string[]]
-        $Title,
+        $Title = @(),
 
         [Parameter(ParameterSetName = 'IdSet')]
         [string[]]
-        $UpdateId,
+        $UpdateId = @(),
 
         [Parameter()]
         [DateTime]
@@ -43,6 +43,9 @@ function Get-WindowsUpdateHistory {
         $OperationTypeId = $Type -as [KPBSD.PowerShell.WindowsUpdate.OperationType]
         $CurrentPageNumber = 0
         $PageSize = 25
+        $UpdateIdsNotMatched = [System.Collections.Generic.HashSet[string]]::new([string[]]$UpdateId, [System.StringComparer]::OrdinalIgnoreCase)
+        $TitlesToMatch = @($Title | Where-Object { -not [WildcardPattern]::ContainsWildcardCharacters($_) })
+        $TitlesNotMatched = [System.Collections.Generic.HashSet[string]]::new([string[]]$TitlesToMatch, [System.StringComparer]::OrdinalIgnoreCase)
 
         while ($CurrentPageNumber * $PageSize -lt $TotalCount) {
             $WriteProgressParameters = @{
@@ -51,7 +54,7 @@ function Get-WindowsUpdateHistory {
                 PercentComplete = [int][Math]::Max([Math]::Truncate(($CurrentPageNumber * $PageSize) / $TotalCount), 100)
             }
             Write-Progress @WriteProgressParameters
-            
+
             $HistoryContents = $Searcher.QueryHistory($CurrentPageNumber * $PageSize, $PageSize)
             foreach ($history in $HistoryContents) {
                 # -like $Title
@@ -65,7 +68,6 @@ function Get-WindowsUpdateHistory {
                     }
                     if (-not $matchTitle) {
                         Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Get-WindowsUpdateHistory] Update $($history.Title) filtered by Title."
-                        Write-Information "Update $($history.Title) filtered by Title."
                         continue
                     }
                 }
@@ -73,38 +75,47 @@ function Get-WindowsUpdateHistory {
                 # -eq $UpdateId
                 if ([bool]$UpdateId -and ($UpdateId -notcontains $history.UpdateIdentity.UpdateId)) {
                     Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Get-WindowsUpdateHistory] Update $($history.Title) filtered by UpdateId."
-                    Write-Information "Update $($history.Title) filtered by UpdateId."
                     continue
                 }
 
                 if ($history.Date -lt $MinimumDate) {
                     Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Get-WindowsUpdateHistory] Update $($history.Title) filtered by MinimumDate."
-                    Write-Information "Update $($history.Title) filtered by MinimumDate."
                     continue
                 }
 
                 if ($history.Date -gt $MaximumDate) {
                     Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Get-WindowsUpdateHistory] Update $($history.Title) filtered by MaximumDate."
-                    Write-Information "Update $($history.Title) filtered by MaximumDate."
                     continue
                 }
 
                 if ($InstalledFromServer -ne 'Default' -and ($history.ServerSelection -ne $InstalledFromServer)) {
                     Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Get-WindowsUpdateHistory] Update $($history.Title) filtered by InstalledFromServer."
-                    Write-Information "Update $($history.Title) filtered by InstalledFromServer."
                     continue
                 }
 
                 if ([bool]$OperationTypeId -and $history.Operation -ne $OperationTypeId) {
                     Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Get-WindowsUpdateHistory] Update $($history.Title) filtered by Type."
-                    Write-Information "Update $($history.Title) filtered by Type."
                     continue
                 }
 
+                [void]$TitlesNotMatched.Remove($history.Title)
+                [void]$UpdateIdsNotMatched.Remove($history.UpdateIdentity.UpdateId)
                 $history
             }
             $CurrentPageNumber += 1
         }
+
+        foreach ($t in $TitlesNotMatched) {
+            $PSCmdlet.WriteError(
+                (New-ItemNotFoundError -ResourceType 'WindowsUpdateHistory' -IdentifierName 'Title' -Identifier $t)
+            )
+        }
+        foreach ($i in $UpdateIdsNotMatched) {
+            $PSCmdlet.WriteError(
+                (New-ItemNotFoundError -ResourceType 'WindowsUpdateHistory' -IdentifierName 'UpdateId' -Identifier $i)
+            )
+        }
+
         Write-Progress -Activity 'Get-WindowsUpdateHistory' -Completed
     }
 }

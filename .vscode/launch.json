@@ -8,7 +8,12 @@
             "name": "PowerShell: Interactive Session",
             "type": "PowerShell",
             "request": "launch",
-            "cwd": ""
+            "cwd": "",
+            "args": [
+                "-noprofile",
+                "-command",
+                "Import-Module '${workspaceRoot}/Build/debug.psm1' -ArgumentList $true"
+            ]
         }
     ]
 }
