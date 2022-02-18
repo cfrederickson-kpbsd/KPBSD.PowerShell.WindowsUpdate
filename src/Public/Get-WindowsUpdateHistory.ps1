@@ -30,7 +30,7 @@ function Get-WindowsUpdateHistory {
         $Type = 'All'
     )
     begin {
-        $ErrorActionPreference = 'Stop'
+        #$ErrorActionPreference = 'Stop'
     }
     process {
         $Searcher = New-WindowsUpdateSearcher

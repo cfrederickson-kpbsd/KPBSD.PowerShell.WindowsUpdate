@@ -1,10 +1,13 @@
-Describe 'New-WindowsUpdateDownloader' {
-    It 'returns ''System.__ComObject#{68f1c6f9-7ecc-4666-a464-247fe12496c3}''' {
-        $Downloader = New-WindowsUpdateDownloader
-        $Downloader.PSTypeNames | Should -Contain 'System.__ComObject#{68f1c6f9-7ecc-4666-a464-247fe12496c3}'
-    }
-    It 'sets ClientApplicationID' {
-        $Downloader = New-WindowsUpdateDownloader
-        $Downloader.ClientApplicationID | Should -BeTrue
+Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) "Build\Debug\KPBSD.PowerShell.WindowsUpdate.psm1")
+InModuleScope 'KPBSD.PowerShell.WindowsUpdate' {
+    Describe 'New-WindowsUpdateDownloader' {
+        It 'returns ''System.__ComObject#{68f1c6f9-7ecc-4666-a464-247fe12496c3}''' {
+            $Downloader = New-WindowsUpdateDownloader
+            $Downloader.PSTypeNames | Should -Contain 'System.__ComObject#{68f1c6f9-7ecc-4666-a464-247fe12496c3}'
+        }
+        It 'sets ClientApplicationID' {
+            $Downloader = New-WindowsUpdateDownloader
+            $Downloader.ClientApplicationID | Should -BeTrue
+        }
     }
 }

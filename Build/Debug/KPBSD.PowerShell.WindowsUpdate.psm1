@@ -7,7 +7,7 @@ param(
     $ExportAllFunctions
 )
 
-$ProjectDir = Split-Path $PSScriptRoot -Parent
+$ProjectDir = Split-Path $PSScriptRoot -Parent | Split-Path -Parent
 $SourceDir = Join-Path $ProjectDir 'src'
 $ScriptFilesToImport = Get-ChildItem -Path $SourceDir -Include '*.ps1' -Recurse
 
@@ -20,6 +20,6 @@ foreach ($file in $ScriptFilesToImport) {
 if ($ExportAllFunctions) {
 }
 else {
-    $PublicFunctions = $ScriptFilesToImport | Where-Object 'Path' -like '*Public*' | Select-Object -ExpandProperty BaseName
+    $PublicFunctions = $ScriptFilesToImport | Where-Object 'FullName' -like '*Public*' | Select-Object -ExpandProperty BaseName
     Export-ModuleMember -Function $PublicFunctions
 }

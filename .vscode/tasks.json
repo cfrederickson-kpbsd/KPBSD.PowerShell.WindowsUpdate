@@ -12,7 +12,7 @@
                 "-command",
                 {
                     "quoting": "weak",
-                    "value": "Import-Module '${workspaceFolder}/build/debug.psm1' -ArgumentList $true; Import-Module Pester -MinimumVersion 5.0; Invoke-Pester -Configuration @{Run=@{Path='${workspaceFolder}/tests/'};Output=@{Verbosity='Detailed'}}"
+                    "value": "Import-Module Pester -MinimumVersion 5.0; Invoke-Pester -Configuration @{Run=@{Path='${workspaceFolder}/tests/'};Output=@{Verbosity='Detailed'}}"
                 }
             ],
             "group": {
