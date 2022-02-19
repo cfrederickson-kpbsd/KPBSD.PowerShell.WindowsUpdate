@@ -4,7 +4,7 @@ using System.Management.Automation;
 
 namespace KPBSD.PowerShell.WindowsUpdate
 {
-    public sealed class WindowsUpdateSearcherJob : Job
+    public sealed class PSSearchJob : WindowsUpdateJob
     {
         private bool? _canAutomaticallyUpgradeService;
         private bool? _includePotentiallySupercededUpdates;
@@ -14,60 +14,14 @@ namespace KPBSD.PowerShell.WindowsUpdate
         private bool? _ignoreDownloadPriority;
         private SearchScope? _searchScope;
         private string _criteria;
-        private IUpdateSearcher _windowsUpdateSearcher;
-        private ISearchJob _searchJob;
         private WindowsUpdateSearchParameters _clientFilterParameters;
 
-        public WindowsUpdateSearcherJob(string command, string jobName) : base(command, jobName)
+        public PSSearchJob(string command, string jobName) : base(command, jobName)
         {
             _criteria = String.Empty;
             _clientFilterParameters = new WindowsUpdateSearchParameters(Array.Empty<WildcardPattern>(), Array.Empty<string>(), default);
         }
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (_searchJob != null)
-                {
-                    if (this.JobStateInfo.State == JobState.Running)
-                    {
-                        _searchJob.RequestAbort();
-                    }
-                    _searchJob.CleanUp();
-                }
-            }
-            base.Dispose(disposing);
-        }
-
-        public override string Location { get { return ""; } }
-        public override string StatusMessage
-        {
-            get
-            {
-                if (this._windowsUpdateSearcher != null && this._searchJob != null && this._searchJob.IsCompleted)
-                {
-                    dynamic currentSearchResult = this._windowsUpdateSearcher.EndSearch(this._searchJob);
-                    return ((OperationResultCode)(int)currentSearchResult.ResultCode).ToString();
-                }
-                else
-                {
-                    return "";
-                }
-            }
-        }
-        public override bool HasMoreData
-        {
-            get
-            {
-                return this.Output.Count > 0
-                || this.Error.Count > 0
-                || this.Warning.Count > 0
-                || this.Verbose.Count > 0
-                || this.Debug.Count > 0
-                || this.Information.Count > 0
-                || this.Progress.Count > 0;
-            }
-        }
+        protected override string Operation => "Search";
         public bool? CanAutomaticallyUpgradeService
         {
             get { return _canAutomaticallyUpgradeService; }
@@ -157,73 +111,16 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 _clientFilterParameters = value;
             }
         }
-        private void AssertNotStarted()
+        protected override void AssertCanStart()
         {
-            if (this.JobStateInfo.State != JobState.NotStarted)
-            {
-                throw new InvalidJobStateException(this.JobStateInfo.State, "Jobs can only be started once.");
-            }
-        }
-        public override void StopJob()
-        {
-            if (this.JobStateInfo.State == JobState.Stopped)
-            {
-                return;
-            }
-            else if (this.JobStateInfo.State == JobState.NotStarted)
-            {
-                this.SetJobState(JobState.Stopped);
-            }
-            else if (this.JobStateInfo.State == JobState.Running)
-            {
-                this.SetJobState(JobState.Stopping);
-                this._searchJob.RequestAbort();
-            }
-            else
-            {
-                throw new InvalidJobStateException(this.JobStateInfo.State, "The job cannot be stopped unless the current JobState is Running.");
-            }
-        }
-        public void StartJob(
-            dynamic windowsUpdateSession
-        )
-        {
-            if (windowsUpdateSession == null)
-            {
-                throw new ArgumentNullException("windowsUpdateSession");
-            }
             if (this.ServerSelection.GetValueOrDefault() == WindowsUpdate.ServerSelection.Others && !this.ServiceId.HasValue)
             {
                 throw new InvalidOperationException("The ServiceId must be set when ServerSelection is [ServerSelection]::Others.");
             }
-            AssertNotStarted();
-            this.SetJobState(JobState.Running);
-            try
-            {
-                InitializeAndStartJob(windowsUpdateSession.CreateUpdateSearcher());
-            }
-            catch (Exception e)
-            {
-                this.FailWithException(e);
-            }
         }
-        private void FailWithException(Exception exn)
+        protected override object[] GetBeginJobParameters()
         {
-            if (exn == null)
-            {
-                exn = new Exception("An unknown problem caused the job to fail.");
-            }
-            var er = new ErrorRecord(
-                exn,
-                "JobTerminatingException",
-                ErrorCategory.NotSpecified,
-                null
-            );
-            this.Error.Add(er);
-            this.SetJobState(JobState.Failed);
-        }
-        private void InitializeAndStartJob(dynamic windowsUpdateSearcher)
-        {
+            dynamic windowsUpdateSearcher = this.WUJobSource!;
             if (this.CanAutomaticallyUpgradeService.HasValue)
             {
                 windowsUpdateSearcher.CanAutomaticallyUpgradeService = this.CanAutomaticallyUpgradeService.Value;
@@ -281,9 +178,12 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 this._searchScope = (SearchScope)(int)windowsUpdateSearcher.SearchScope;
             }
 
-            this._windowsUpdateSearcher = windowsUpdateSearcher;
-            var searcher = (IUpdateSearcher)windowsUpdateSearcher;
-            this._searchJob = searcher.BeginSearch(this.Criteria, new OnSearchCompletedCallback(OnSearchCompleted), windowsUpdateSearcher);
+            return new object[]
+            {
+                this.Criteria,
+                new OnSearchCompletedCallback(OnSearchCompleted),
+                windowsUpdateSearcher
+            };
         }
         private void OnSearchCompleted(ISearchJob searchJob, ISearchCompletedCallbackArgs callbackArgs)
         {

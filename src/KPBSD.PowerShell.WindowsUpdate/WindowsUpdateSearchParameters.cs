@@ -37,7 +37,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
             if (Title.Length > 0) {
                 var titleMatched = false;
                 foreach (var title in Title) {
-                    if (title.IsMatch(update.Identity.UpdateId)) {
+                    if (title.IsMatch(update.Title)) {
                         titleMatched = true;
                         break;
                     }
@@ -62,7 +62,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
                     return string.Format("IsInstalled = 0 and UpdateId = '{0}'", this.UpdateId[0]);
                 }
                 else {
-                    return string.Format("IsInstalled = 0 and UpdateId = '{0}' and IsHidden = 0");
+                    return string.Format("IsInstalled = 0 and UpdateId = '{0}' and IsHidden = 0", this.UpdateId[0]);
                 }
             }
             else {

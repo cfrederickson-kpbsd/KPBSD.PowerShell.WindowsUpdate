@@ -5,6 +5,7 @@ function Get-WindowsUpdate {
         [Parameter(Position = 0, ParameterSetName = 'TitleSet')]
         [Alias('Name')]
         [SupportsWildcards()]
+        [ValidateNotNullOrEmpty()]
         [string[]]
         $Title,
 
@@ -41,72 +42,96 @@ function Get-WindowsUpdate {
         [switch]
         $AsJob
     )
+    begin {
+        $SynchronousJobs = [System.Collections.Generic.List[System.Management.Automation.Job]]::new()
+        $WhatIfPreference = $false
+        $ConfirmPreference= $false
+    }
     process {
-        $Job = [KPBSD.PowerShell.WindowsUpdate.WindowsUpdateSearcherJob]::new($PSCmdlet.MyInvocation.Line, $null)
-        $ClientFilterParameters = [KPBSD.PowerShell.WindowsUpdate.WindowsUpdateSearchParameters]::new($Title, $UpdateId, $IncludeHidden)
-        $ServerCriteria = $ClientFilterParameters.GetServerFilter()
-        $Job.ClientFilterParameters = $ClientFilterParameters
-        $Job.Criteria = $ServerCriteria
-        $Job.Online = -not $SearchOffline
-        if ($Server -as [KPBSD.PowerShell.WindowsUpdate.ServerSelection]) {
-            $Job.ServerSelection = $Server
+        try {
+            $Job = [KPBSD.PowerShell.WindowsUpdate.PSSearchJob]::new($PSCmdlet.MyInvocation.Line, $null)
+            [WildcardPattern[]]$TitleWildcards = $Title | ForEach-Object { [WildcardPattern]::Get($_, 'IgnoreCase') }
+            $ClientFilterParameters = [KPBSD.PowerShell.WindowsUpdate.WindowsUpdateSearchParameters]::new($TitleWildcards, $UpdateId, $IncludeHidden)
+            $ServerCriteria = $ClientFilterParameters.GetServerFilter()
+            $Job.ClientFilterParameters = $ClientFilterParameters
+            $Job.Criteria = $ServerCriteria
+            $Job.Online = -not $SearchOffline
+            if ($Server -as [KPBSD.PowerShell.WindowsUpdate.ServerSelection]) {
+                $Job.ServerSelection = $Server
+            }
+            elseif ($Server) {
+                $Job.ServerSelection = 'Others'
+                $Job.ServiceId = $Server
+            }
+
+            $Searcher = New-WindowsUpdateSearcher
+            $Job | Start-WindowsUpdateJob $Searcher | Out-Null
+
+            if ($AsJob) {
+                $Job
+            }
+            else {
+                $SynchronousJobs.Add($Job)
+            }
         }
-        elseif ($Server) {
-            $Job.ServerSelection = 'Others'
-            $Job.ServiceId = $Server
+        finally {
+            if ($PSCmdlet.Stopping) {
+                $SynchronousJobs | Where-Object 'JobState' -eq 'Running' | Stop-Job -ErrorAction Ignore
+                $SynchronousJobs | Remove-Job -Force -ErrorAction Ignore
+            }
         }
-
-        $PSCmdlet.JobRepository.Add($Job)
-        $Session = Get-WindowsUpdateSession
-        $Job.StartJob($Session)
-
-        if ($AsJob) {
-            $Job
-        }
-        else {
-            try {
-                [string[]]$TitlesToMatch = @($Titles | Where-Object { -not [WildcardPattern]::ContainsWildcardCharacters($_) })
-                $TitlesNotMatched = [System.Collections.Generic.HashSet[string]]::new($TitlesToMatch, [System.StringComparer]::OrdinalIgnoreCase)
-                $UpdateIdsNotMatched = [System.Collections.Generic.HashSet[string]]::new($UpdateId, [System.StringComparer]::OrdinalIgnoreCase)
-                $Results = $Job | Receive-Job -Wait
-                foreach ($Result in $Results) {
-                    if ($Title.Length -gt 0) {
-                        $TitleMatched = $false
-                        foreach ($T in $Title) {
-                            if ($Result.Title -like $T) {
-                                $TitleMatched = $true
-                                break
-                            }
-                        }
-                        if (-not $TitleMatched) {
-                            continue
-                        }
-                    }
-                    if ($UpdateId -NotContains $Result.UpdateId) {
-                        continue
-                    }
-
-                    [void]$TitlesNotMatched.Remove($Result.Title)
-                    [void]$UpdateIdsNotMatched.Remove($Result.UpdateId)
-                    $Result
-                }
-
-                foreach ($TitleNotMatched in $TitlesNotMatched) {
-                    $PSCmdlet.WriteError(
-                        (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'Title' -Identifier $TitleNotMatched)
-                    )
-                }
-                foreach ($UpdateIdNotMatched in $UpdateIdsNotMatched) {
-                    $PSCmdlet.WriteError(
-                        (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'UpdateId' -Identifier $UpdateIdNotMatched)
-                    )
+    }
+    end {
+        try {
+            $TitlesNotMatched = [System.Collections.Generic.HashSet[string]]::new($Title.Count, [System.StringComparer]::OrdinalIgnoreCase)
+            $UpdateIdsNotMatched = [System.Collections.Generic.HashSet[string]]::new($UpdateId.Count, [System.StringComparer]::OrdinalIgnoreCase)
+            foreach ($T in $Title) {
+                if (-not [WildcardPattern]::ContainsWildcardCharacters($T)) {
+                    [void]$TitlesNotMatched.Add($T)
                 }
             }
-            finally {
-                if ($Job.State -eq 'Running') {
-                    $Job | Stop-Job -ErrorAction Ignore -WhatIf:$false -Confirm:$false
+            foreach ($U in $UpdateId) {
+                [void]$UpdateIdsNotMatched.Add($U)
+            }
+
+            $Results = $SynchronousJobs | Receive-Job -Wait
+            foreach ($Result in $Results) {
+                if ($Title.Count -gt 0) {
+                    $TitleMatched = $false
+                    foreach ($T in $Title) {
+                        if ($Result.Title -like $T) {
+                            $TitleMatched = $true
+                            break
+                        }
+                    }
+                    if (-not $TitleMatched) {
+                        continue
+                    }
                 }
-                $Job | Remove-Job -Force -WhatIf:$false -Confirm:$false -ErrorAction Ignore
+                if ($UpdateId.Count -gt 0 -and $UpdateId -NotContains $Result.UpdateId) {
+                    continue
+                }
+
+                [void]$TitlesNotMatched.Remove($Result.Title)
+                [void]$UpdateIdsNotMatched.Remove($Result.UpdateId)
+                $Result
+            }
+
+            foreach ($TitleNotMatched in $TitlesNotMatched) {
+                $PSCmdlet.WriteError(
+                    (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'Title' -Identifier $TitleNotMatched)
+                )
+            }
+            foreach ($UpdateIdNotMatched in $UpdateIdsNotMatched) {
+                $PSCmdlet.WriteError(
+                    (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'UpdateId' -Identifier $UpdateIdNotMatched)
+                )
+            }
+        }
+        finally {
+            if ($PSCmdlet.Stopping) {
+                $SynchronousJobs | Where-Object 'JobState' -eq 'Running' | Stop-Job -ErrorAction Ignore
+                $SynchronousJobs | Remove-Job -Force -ErrorAction Ignore
             }
         }
     }

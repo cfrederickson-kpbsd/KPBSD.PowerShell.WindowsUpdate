@@ -12,7 +12,12 @@ $SourceDir = Join-Path $ProjectDir 'src'
 $ScriptFilesToImport = Get-ChildItem -Path $SourceDir -Include '*.ps1' -Recurse
 $CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse
 
-Add-Type -Path $CSharpFilesToLoad -IgnoreWarnings
+$TempAssemblyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate.dll'
+if (Test-Path $TempAssemblyPath) {
+    Remove-Item $TempAssemblyPath -ErrorAction Stop
+}
+Add-Type -Path $CSharpFilesToLoad -IgnoreWarnings -OutputAssembly $TempAssemblyPath
+Import-Module $TempAssemblyPath
 
 foreach ($file in $ScriptFilesToImport) {
     . $file.FullName
