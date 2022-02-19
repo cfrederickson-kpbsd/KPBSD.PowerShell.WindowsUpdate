@@ -10,12 +10,15 @@ param(
 $ProjectDir = Split-Path $PSScriptRoot -Parent | Split-Path -Parent
 $SourceDir = Join-Path $ProjectDir 'src'
 $ScriptFilesToImport = Get-ChildItem -Path $SourceDir -Include '*.ps1' -Recurse
+$CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse
+
+Add-Type -Path $CSharpFilesToLoad -IgnoreWarnings
 
 foreach ($file in $ScriptFilesToImport) {
     . $file.FullName
 }
-#Update-TypeData -PrependPath (Join-Path $SourceDir 'KPBSD.PowerShell.WindowsUpdate.types.ps1xml')
-#Update-FormatData -PrependPath (Join-Path $SourceDir 'KPBSD.PowerShell.WindowsUpdate.formats.ps1xml')
+Update-TypeData -PrependPath (Join-Path $SourceDir 'KPBSD.PowerShell.WindowsUpdate.types.ps1xml')
+Update-FormatData -PrependPath (Join-Path $SourceDir 'KPBSD.PowerShell.WindowsUpdate.formats.ps1xml')
 
 if ($ExportAllFunctions) {
 }

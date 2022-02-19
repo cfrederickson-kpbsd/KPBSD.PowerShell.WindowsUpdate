@@ -2,19 +2,36 @@
 <Configuration>
     <ViewDefinitions>
         <View>
-            <Name></Name>
+            <Name>Default</Name>
             <ViewSelectedBy>
-                <TypeName></TypeName>
+                <TypeName>System.__ComObject#{c1c2f21a-d2f4-4902-b5c6-8a081c19a890}</TypeName>
+                <TypeName>System.__ComObject#{70cf5c82-8642-42bb-9dbc-0cfd263c6c4f}</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
                     <TableColumnHeader/>
                 </TableHeaders>
                 <TableRowEntries>
                     <TableRowEntry>
                         <TableColumnItems>
                             <TableColumnItem>
-                                <PropertyName></PropertyName>
+                                <PropertyName>Title</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>UpdateId</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>IsDownloaded</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>IsInstalled</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>IsMandatory</PropertyName>
                             </TableColumnItem>
                         </TableColumnItems>
                     </TableRowEntry>

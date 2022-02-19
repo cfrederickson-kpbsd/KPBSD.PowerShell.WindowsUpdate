@@ -1,6 +1,53 @@
 <?xml version="1.0"?>
 <Types>
     <Type>
-        <Name></Name>
+        <Name>System.__ComObject#{c1c2f21a-d2f4-4902-b5c6-8a081c19a890}</Name>
+        <Members>
+            <AliasProperty>
+                <Name>RequiresManualInstallation</Name>
+                <ReferencedMemberName>BrowseOnly</ReferencedMemberName>
+            </AliasProperty>
+            <AliasProperty>
+                <Name>InstalledForAnotherProduct</Name>
+                <ReferencedMemberName>IsPresent</ReferencedMemberName>
+            </AliasProperty>
+            <ScriptProperty>
+                <Name>UpdateId</Name>
+                <GetScriptBlock>
+                    $this.Identity.UpdateId
+                </GetScriptBlock>
+            </ScriptProperty>
+            <ScriptProperty>
+                <Name>RevisionNumber</Name>
+                <GetScriptBlock>
+                    $this.UpdateIdentity.RevisionNumber
+                </GetScriptBlock>
+            </ScriptProperty>
+        </Members>
+    </Type>
+    <Type>
+        <Name>System.__ComObject#{70cf5c82-8642-42bb-9dbc-0cfd263c6c4f}</Name>
+        <Members>
+            <AliasProperty>
+                <Name>RequiresManualInstallation</Name>
+                <ReferencedMemberName>BrowseOnly</ReferencedMemberName>
+            </AliasProperty>
+            <AliasProperty>
+                <Name>InstalledForAnotherProduct</Name>
+                <ReferencedMemberName>IsPresent</ReferencedMemberName>
+            </AliasProperty>
+            <ScriptProperty>
+                <Name>UpdateId</Name>
+                <GetScriptBlock>
+                    $this.Identity.UpdateId
+                </GetScriptBlock>
+            </ScriptProperty>
+            <ScriptProperty>
+                <Name>RevisionNumber</Name>
+                <GetScriptBlock>
+                    $this.UpdateIdentity.RevisionNumber
+                </GetScriptBlock>
+            </ScriptProperty>
+        </Members>
     </Type>
 </Types>
