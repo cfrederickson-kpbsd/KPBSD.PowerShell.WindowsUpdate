@@ -3,6 +3,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     using System;
     using System.Management.Automation;
     using System.Reflection;
+    using System.Threading;
 
     public abstract class WindowsUpdateJob : Job
     {
@@ -25,9 +26,6 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 if (this.WUJobSource != null && this.WUApiJob != null)
                 {
                     if (this.WUApiJob?.IsCompleted ?? false) {
-                        return "Incomplete";
-                    }
-                    else {
                         dynamic result = this.WUJobSource!.GetType().InvokeMember(
                             string.Format("End{0}", this.Operation),
                             BindingFlags.InvokeMethod,
@@ -36,6 +34,9 @@ namespace KPBSD.PowerShell.WindowsUpdate
                             new[] { this.WUApiJob }
                         );
                         return ((OperationResultCode)(int)result.ResultCode).ToString();
+                    }
+                    else {
+                        return "Incomplete";
                     }
                 }
                 else
@@ -58,6 +59,13 @@ namespace KPBSD.PowerShell.WindowsUpdate
             }
         }
         
+        public WindowsUpdateJob(string command, string jobName) : base (command, jobName)
+        {
+            this.PSJobTypeName = nameof(WindowsUpdateJob);
+        }
+        /// <summary>
+        /// Throws an exception if the job state does not equal <see cref="JobState.NotStarted"/>.
+        /// </summary>
         protected void AssertNotStarted()
         {
             if (this.JobStateInfo.State != JobState.NotStarted)
@@ -65,6 +73,9 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 throw new InvalidJobStateException(this.JobStateInfo.State, "Jobs can only be started once.");
             }
         }
+        /// <summary>
+        /// Terminates the job operation.
+        /// </summary>
         public override void StopJob()
         {
             if (this.JobStateInfo.State == JobState.Stopped)
@@ -85,6 +96,11 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 throw new InvalidJobStateException(this.JobStateInfo.State, "The job cannot be stopped unless the current JobState is Running.");
             }
         }
+        /// <summary>
+        /// Reports the exception as an error in the job streams, and sets the job state to
+        /// <see cref="JobState.Failed"/>.
+        /// </summary>
+        /// <param name="exn"></param>
         protected void FailWithException(Exception exn)
         {
             if (exn == null)
@@ -100,7 +116,11 @@ namespace KPBSD.PowerShell.WindowsUpdate
             this.Error.Add(er);
             this.SetJobState(JobState.Failed);
         }
-        public void StartJob(object jobSource) {
+        /// <summary>
+        /// Initializes and begins the job.
+        /// </summary>
+        /// <param name="jobSource"></param>
+        internal void StartJob(object jobSource) {
             AssertNotStarted();
             if (jobSource is null)
             {
@@ -123,8 +143,16 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 this.FailWithException(e);
             }
         }
-        protected abstract object[] GetBeginJobParameters();
+        /// <summary>
+        /// Gets parameters to pass to the COM object's Begin{Operation} method.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract object?[] GetBeginJobParameters();
+        /// <summary>
+        /// Throw an exception if the job cannot start. Called during <see cref="StartJob"/>.
+        /// </summary>
         protected virtual void AssertCanStart() {}
+        
         protected override void Dispose(bool disposing)
         {
             if (disposing) {
@@ -134,15 +162,19 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 }
                 if (this.WUApiJob != null)
                 {
-                    this.WUApiJob.CleanUp();
+                    ThreadPool.QueueUserWorkItem(CleanUpAsThreadPoolItem, (object)this.WUApiJob);
                 }
             }
             base.Dispose(disposing);
         }
-
-        public WindowsUpdateJob(string command, string jobName) : base (command, jobName)
+        private static void CleanUpAsThreadPoolItem(dynamic state)
         {
-            this.PSJobTypeName = nameof(WindowsUpdateJob);
+            state.CleanUp();
+        }
+
+        public override string ToString()
+        {
+            return this.Name;
         }
     }
 }

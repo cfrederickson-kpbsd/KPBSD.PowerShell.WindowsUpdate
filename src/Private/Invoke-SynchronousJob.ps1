@@ -1,3 +1,8 @@
+<#
+.SYNOPSIS
+Runs a job as if it were a synchronous operation, ensuring that the job is cleared from the PSJobRepository
+when the command completes or is terminated.
+#>
 function Invoke-SynchronousJob {
     [CmdletBinding()]
     param(
@@ -13,18 +18,20 @@ function Invoke-SynchronousJob {
         $AllJobs.AddRange($Job)
     }
     end {
-        if ($AllJobs.Count -eq 0) {
-            return
-        }
-        $PSDefaultParameterValues['*:WhatIf'] = $false
-        $PSDefaultParameterValues['*:Confirm'] = $false
+        $WhatIfPreference = $ConfirmPreference = $false
         try {
-            Receive-Job $AllJobs -Wait -AutoRemoveJob
+            while ($AllJobs.Count -gt 0) {
+                Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Waiting for $($AllJobs.Count) remaining job(s)."
+                $CompletedJob = Wait-Job -Job $AllJobs -Any
+                Receive-Job -Job $CompletedJob -ErrorVariable ReceivedJobErrors
+                [void]$AllJobs.Remove($CompletedJob)
+                Remove-Job -Job $CompletedJob
+            }
         }
         finally {
-            $PSDefaultParameterValues['*:ErrorAction'] = 'Ignore'
-            # $AllJobs | Where-Object 'State' -eq 'Running' | Stop-Job
-            # $AllJobs | Remove-Job -Force
+            $ErrorActionPreference = 'Ignore'
+            $AllJobs | Where-Object 'State' -eq 'Running' | Stop-Job
+            $AllJobs | Remove-Job -Force
         }
     }
 }

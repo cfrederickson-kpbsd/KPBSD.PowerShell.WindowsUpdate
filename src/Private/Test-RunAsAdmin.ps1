@@ -4,13 +4,14 @@
 
 $script:IsRunningAsAdmin = $null
 function Test-RunAsAdmin {
+    [OutputType([bool])]
     [CmdletBinding()]
     param()
     process {
         if ($null -eq $script:IsRunningAsAdmin) {
             $Identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
             $Principal = [System.Security.Principal.WindowsPrincipal]::new($Identity)
-            $script:IsRunningAsAdmin = $Principal.IsInRole('Administrator')
+            $script:IsRunningAsAdmin = $Principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
         }
         $script:IsRunningAsAdmin
     }

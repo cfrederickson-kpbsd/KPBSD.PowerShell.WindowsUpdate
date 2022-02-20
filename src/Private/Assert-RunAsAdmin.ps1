@@ -20,6 +20,7 @@ function Assert-RunAsAdmin {
     )
     process {
         if (Test-RunAsAdmin) {
+            Write-Verbose "Performing the operation '$Operation', which requires administrative privilages."
             $true
         }
         else {
@@ -46,8 +47,8 @@ function Assert-RunAsAdmin {
                 )
                 $ErrorRecord.ErrorDetails = $Message
                 $ErrorRecord.ErrorDetails.RecommendedAction = 'Launch PowerShell as an administrator and try again.'
-                # throw $ErrorRecord
-                $PSCmdlet.ThrowTerminatingError($ErrorRecord)
+                throw $ErrorRecord
+                # $PSCmdlet.ThrowTerminatingError($ErrorRecord)
             }
             $false
         }

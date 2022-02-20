@@ -4,7 +4,7 @@ using System.Management.Automation;
 
 namespace KPBSD.PowerShell.WindowsUpdate
 {
-    public sealed class PSSearchJob : WindowsUpdateJob
+    public sealed class WUSearchJob : WindowsUpdateJob
     {
         private bool? _canAutomaticallyUpgradeService;
         private bool? _includePotentiallySupercededUpdates;
@@ -16,10 +16,10 @@ namespace KPBSD.PowerShell.WindowsUpdate
         private string _criteria;
         private WindowsUpdateSearchParameters _clientFilterParameters;
 
-        public PSSearchJob(string command, string jobName) : base(command, jobName)
+        public WUSearchJob(string command, string jobName) : base(command, jobName)
         {
             _criteria = String.Empty;
-            _clientFilterParameters = new WindowsUpdateSearchParameters(Array.Empty<WildcardPattern>(), Array.Empty<string>(), default);
+            _clientFilterParameters = new WindowsUpdateSearchParameters(Array.Empty<WildcardPattern>(), Array.Empty<string>(), default, default);
         }
         protected override string Operation => "Search";
         public bool? CanAutomaticallyUpgradeService
@@ -210,7 +210,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
                         this.Output.Add(PSObject.AsPSObject(result));
                     }
                 }
-
+                
                 switch ((OperationResultCode)(int)searchResult.ResultCode)
                 {
                     case OperationResultCode.Aborted:
@@ -229,8 +229,6 @@ namespace KPBSD.PowerShell.WindowsUpdate
                         }
                         break;
                 }
-
-                this.SetJobState(JobState.Completed);
             }
             catch (Exception e)
             {

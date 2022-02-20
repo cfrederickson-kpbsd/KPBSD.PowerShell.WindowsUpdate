@@ -1,7 +1,7 @@
 function New-ItemNotFoundError {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Instantiates a .NET object. Does not change state.')]
     [OutputType([System.Management.Automation.ErrorRecord])]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '')]
+    [CmdletBinding()]
     param(
         # The resource that was not found.
         [string]$ResourceType,

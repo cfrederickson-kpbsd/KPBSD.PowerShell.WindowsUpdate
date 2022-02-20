@@ -1,6 +1,7 @@
 function New-WindowsUpdateInstaller {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Instantiates a .NET object. Does not change state.')]
     [OutputType('System.__ComObject#{ef8208ea-2304-492d-9109-23813b0958e1}')]
+    [CmdletBinding()]
     param()
     begin {
         $ErrorActionPreference = 'Stop'

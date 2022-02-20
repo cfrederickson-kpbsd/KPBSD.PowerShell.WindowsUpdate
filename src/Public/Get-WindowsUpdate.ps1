@@ -1,4 +1,5 @@
 function Get-WindowsUpdate {
+    [Alias('gwu')]
     [CmdletBinding(DefaultParameterSetName = 'TitleSet', PositionalBinding = $false)]
     param(
         # Filter by title. Supports wildcards.
@@ -10,7 +11,7 @@ function Get-WindowsUpdate {
         $Title,
 
         # Filter by UpdateId. Does not support wildcards.
-        [Parameter(Mandatory, ParameterSetName = 'IdSet')]
+        [Parameter(Mandatory, ParameterSetName = 'IdSet', ValueFromPipelineByPropertyName)]
         [string[]]
         $UpdateId,
 
@@ -19,11 +20,9 @@ function Get-WindowsUpdate {
         [switch]
         $IncludeHidden,
 
-        # Filter by the type of resource being updated.
         [Parameter()]
-        [ValidateSet('Software', 'Driver', 'All')]
-        [string]
-        $UpdateType = 'All',
+        [switch]
+        $IncludeInstalled,
 
         # Do not go online to search for updates.
         [Parameter()]
@@ -42,16 +41,25 @@ function Get-WindowsUpdate {
         [switch]
         $AsJob
     )
+    dynamicparam {
+        if ($AsJob) {
+            New-DynamicParameter -Name 'JobName' -Type 'String' | New-DynamicParameterDictionary
+        }
+    }
     begin {
         $SynchronousJobs = [System.Collections.Generic.List[System.Management.Automation.Job]]::new()
         $WhatIfPreference = $false
         $ConfirmPreference= $false
+
+        $TitlesNotMatched = [System.Collections.Generic.HashSet[string]]::new($Title.Count, [System.StringComparer]::OrdinalIgnoreCase)
+        $UpdateIdsNotMatched = [System.Collections.Generic.HashSet[string]]::new($UpdateId.Count, [System.StringComparer]::OrdinalIgnoreCase)
     }
     process {
         try {
-            $Job = [KPBSD.PowerShell.WindowsUpdate.PSSearchJob]::new($PSCmdlet.MyInvocation.Line, $null)
-            [WildcardPattern[]]$TitleWildcards = $Title | ForEach-Object { [WildcardPattern]::Get($_, 'IgnoreCase') }
-            $ClientFilterParameters = [KPBSD.PowerShell.WindowsUpdate.WindowsUpdateSearchParameters]::new($TitleWildcards, $UpdateId, $IncludeHidden)
+            $JobName = $PSBoundParameters['JobName']
+            $Job = [KPBSD.PowerShell.WindowsUpdate.WUSearchJob]::new($PSCmdlet.MyInvocation.Line, $JobName)
+            [WildcardPattern[]]$TitleWildcards = $Title | ForEach-Object { if ($_) { [WildcardPattern]::Get($_, 'IgnoreCase') } }
+            $ClientFilterParameters = [KPBSD.PowerShell.WindowsUpdate.WindowsUpdateSearchParameters]::new($TitleWildcards, $UpdateId, $IncludeHidden, $IncludeInstalled)
             $ServerCriteria = $ClientFilterParameters.GetServerFilter()
             $Job.ClientFilterParameters = $ClientFilterParameters
             $Job.Criteria = $ServerCriteria
@@ -65,13 +73,18 @@ function Get-WindowsUpdate {
             }
 
             $Searcher = New-WindowsUpdateSearcher
-            $Job | Start-WindowsUpdateJob $Searcher | Out-Null
-
-            if ($AsJob) {
-                $Job
-            }
-            else {
+            $Job | Start-WindowsUpdateJob $Searcher | Where-Object { $AsJob }
+            if (!$AsJob) {
                 $SynchronousJobs.Add($Job)
+            }
+
+            foreach ($T in $Title) {
+                if (-not [WildcardPattern]::ContainsWildcardCharacters($T)) {
+                    [void]$TitlesNotMatched.Add($T)
+                }
+            }
+            foreach ($U in $UpdateId) {
+                [void]$UpdateIdsNotMatched.Add($U)
             }
         }
         finally {
@@ -82,57 +95,20 @@ function Get-WindowsUpdate {
         }
     }
     end {
-        try {
-            $TitlesNotMatched = [System.Collections.Generic.HashSet[string]]::new($Title.Count, [System.StringComparer]::OrdinalIgnoreCase)
-            $UpdateIdsNotMatched = [System.Collections.Generic.HashSet[string]]::new($UpdateId.Count, [System.StringComparer]::OrdinalIgnoreCase)
-            foreach ($T in $Title) {
-                if (-not [WildcardPattern]::ContainsWildcardCharacters($T)) {
-                    [void]$TitlesNotMatched.Add($T)
-                }
-            }
-            foreach ($U in $UpdateId) {
-                [void]$UpdateIdsNotMatched.Add($U)
-            }
-
-            $Results = $SynchronousJobs | Receive-Job -Wait
-            foreach ($Result in $Results) {
-                if ($Title.Count -gt 0) {
-                    $TitleMatched = $false
-                    foreach ($T in $Title) {
-                        if ($Result.Title -like $T) {
-                            $TitleMatched = $true
-                            break
-                        }
-                    }
-                    if (-not $TitleMatched) {
-                        continue
-                    }
-                }
-                if ($UpdateId.Count -gt 0 -and $UpdateId -NotContains $Result.UpdateId) {
-                    continue
-                }
-
-                [void]$TitlesNotMatched.Remove($Result.Title)
-                [void]$UpdateIdsNotMatched.Remove($Result.UpdateId)
-                $Result
-            }
-
-            foreach ($TitleNotMatched in $TitlesNotMatched) {
-                $PSCmdlet.WriteError(
-                    (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'Title' -Identifier $TitleNotMatched)
-                )
-            }
-            foreach ($UpdateIdNotMatched in $UpdateIdsNotMatched) {
-                $PSCmdlet.WriteError(
-                    (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'UpdateId' -Identifier $UpdateIdNotMatched)
-                )
-            }
+        $SynchronousJobs | Invoke-SynchronousJob -OutVariable Updates
+        foreach ($update in $Updates) {
+            [void]$TitlesNotMatched.Remove($update.Title)
+            [void]$UpdateIdsNotMatched.Remove($update.UpdateId)
         }
-        finally {
-            if ($PSCmdlet.Stopping) {
-                $SynchronousJobs | Where-Object 'JobState' -eq 'Running' | Stop-Job -ErrorAction Ignore
-                $SynchronousJobs | Remove-Job -Force -ErrorAction Ignore
-            }
+        foreach ($TitleNotMatched in $TitlesNotMatched) {
+            $PSCmdlet.WriteError(
+                (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'Title' -Identifier $TitleNotMatched)
+            )
+        }
+        foreach ($UpdateIdNotMatched in $UpdateIdsNotMatched) {
+            $PSCmdlet.WriteError(
+                (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'UpdateId' -Identifier $UpdateIdNotMatched)
+            )
         }
     }
 }

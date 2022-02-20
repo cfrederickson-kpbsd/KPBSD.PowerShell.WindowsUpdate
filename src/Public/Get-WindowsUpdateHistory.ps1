@@ -1,6 +1,7 @@
 function Get-WindowsUpdateHistory {
-    [CmdletBinding(DefaultParameterSetName = 'TitleSet', PositionalBinding = $false)]
+    [Alias('gwuh')]
     [OutputType('System.__ComObject#{c2bfb780-4539-4132-ab8c-0a8772013ab6}')]
+    [CmdletBinding(DefaultParameterSetName = 'TitleSet', PositionalBinding = $false)]
     param(
         [Parameter(ParameterSetName = 'TitleSet', Position = 0)]
         [SupportsWildcards()]

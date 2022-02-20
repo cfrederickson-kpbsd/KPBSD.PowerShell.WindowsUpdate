@@ -38,5 +38,47 @@
                 </TableRowEntries>
             </TableControl>
         </View>
+        <View>
+            <Name>Default</Name>
+            <ViewSelectedBy>
+                <TypeName>System.__ComObject#{c2bfb780-4539-4132-ab8c-0a8772013ab6}</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <TableHeaders>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader/>
+                    <TableColumnHeader>
+                        <Label>Operation</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>ResultCode</Label>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Title</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>UpdateId</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Date</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <!-- <PropertyName>Operation</PropertyName> -->
+                                <ScriptBlock>[KPBSD.PowerShell.WindowsUpdate.OperationType]$_.Operation</ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <!-- <PropertyName>ResultCode</PropertyName> -->
+                                <ScriptBlock>[KPBSD.PowerShell.WindowsUpdate.OperationResultCode]$_.ResultCode</ScriptBlock>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
     </ViewDefinitions>
 </Configuration>
