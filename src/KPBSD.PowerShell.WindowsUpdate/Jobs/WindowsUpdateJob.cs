@@ -95,6 +95,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
             {
                 throw new InvalidJobStateException(this.JobStateInfo.State, "The job cannot be stopped unless the current JobState is Running.");
             }
+            this.Finished.WaitOne();
         }
         /// <summary>
         /// Reports the exception as an error in the job streams, and sets the job state to

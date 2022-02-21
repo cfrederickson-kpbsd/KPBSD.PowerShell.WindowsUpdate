@@ -18,20 +18,27 @@ function Invoke-SynchronousJob {
         $AllJobs.AddRange($Job)
     }
     end {
+        if ($AllJobs.Count -eq 0) {
+            return
+        }
         $WhatIfPreference = $ConfirmPreference = $false
         try {
-            while ($AllJobs.Count -gt 0) {
-                Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Waiting for $($AllJobs.Count) remaining job(s)."
-                $CompletedJob = Wait-Job -Job $AllJobs -Any
-                Receive-Job -Job $CompletedJob -ErrorVariable ReceivedJobErrors
-                [void]$AllJobs.Remove($CompletedJob)
-                Remove-Job -Job $CompletedJob
-            }
+            Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Waiting for $($AllJobs.Count) job to be run as synchronous operations."
+            Receive-Job -Wait -Job $AllJobs
+            # while ($AllJobs.Count -gt 0) {
+            #     $CompletedJob = Wait-Job -Job $AllJobs -Any
+            #     Receive-Job -Job $CompletedJob
+            #     [void]$AllJobs.Remove($CompletedJob)
+            #     Remove-Job -Job $CompletedJob
+            # }
         }
         finally {
-            $ErrorActionPreference = 'Ignore'
+            $ErrorActionPreference = 'SilentlyContinue'
+            Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Removing sync jobs (Errors: $($Error.Count)). $($AllJobs)."
             $AllJobs | Where-Object 'State' -eq 'Running' | Stop-Job
-            $AllJobs | Remove-Job -Force
+            Wait-Job -Job $AllJobs
+            Remove-Job -Force -Job $AllJobs
+            Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Sync jobs cleaned up (Errors: $($Error.Count)). $(Get-Job)"
         }
     }
 }

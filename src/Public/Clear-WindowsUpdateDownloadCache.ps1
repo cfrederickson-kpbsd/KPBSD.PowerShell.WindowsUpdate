@@ -18,15 +18,24 @@ function Clear-WindowsUpdateDownloadCache {
             {
                 # Ensure the Windows Update Agent service has stopped before removing these files
                 if ($WindowsUpdateService.Status -ne 'Stopped') {
+                    Write-Verbose "Stopping windows service '$($WindowsUpdateService.DisplayName)' ($($WindowsUpdateService.Name))."
                     $WindowsUpdateService | Stop-Service
+                }
+                else
+                {
+                    Write-Warning "The windows service '$($WindowsUpdateService.DisplayName)' ($($WindowsUpdateService.Name)) was not running. The service is automatically started as part of the '$($PSCmdlet.MyInvocation.MyCommand.Name)' command, and will be started when the command completes."
                 }
                 $WindowsUpdateService | Wait-ServiceStatus 'Stopped' -Timeout ([TimeSpan]::FromSeconds(30)) -ErrorAction 'Stop'
 
-                Get-ChildItem "$env:windir/SoftwareDistribution/DataStore" -Recurse -Force | Remove-Item -Force -Recurse
+                Get-ChildItem "$env:windir/SoftwareDistribution/DataStore" -Recurse -Force | ForEach-Object {
+                    Write-Verbose "Removing file at path '$($_.FullName)'."
+                    $_
+                } | Remove-Item -Force -Recurse
             }
             finally
             {
                 if ($WindowsUpdateService.Status -ne 'Running') {
+                    Write-Verbose "Starting windows service '$($WindowsUpdateService.DisplayName)' ($($WindowsUpdateService.Name))."
                     $WindowsUpdateService | Start-Service
                 }
             }

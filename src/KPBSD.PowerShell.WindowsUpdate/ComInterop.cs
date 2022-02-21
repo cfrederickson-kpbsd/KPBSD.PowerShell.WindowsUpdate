@@ -32,22 +32,26 @@ namespace KPBSD.PowerShell.WindowsUpdate
     }
 
     #endregion
-    
+
     #region Download
     // Note to self: we only need to expose the bare minimum that is required to write progress updates,
     // job results, and errors, as well as to fire off the delegate itself.
     // Realistically, if I just stick with using dynamic (almost) everywhere, I can only write up
     // the delegate interfaces and parameters.
 
-    // [ComImport]
-    // [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IUpdateDownloadResult {
+    [ComImport]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("BF99AF76-B575-42AD-8AA4-33CBB5477AF1")]
+    public interface IUpdateDownloadResult
+    {
         int HResult { get; }
         OperationResultCode ResultCode { get; }
     }
-    // [ComImport]
-    // [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IDownloadProgress {
+    [ComImport]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("D31A5BAC-F719-4178-9DBB-5E2CB47FD18A")]
+    public interface IDownloadProgress
+    {
         decimal CurrentUpdateBytesDownloaded { get; }
         decimal CurrentUpdateBytesToDownload { get; }
         DownloadPhase CurrentUpdateDownloadPhase { get; }
@@ -59,43 +63,50 @@ namespace KPBSD.PowerShell.WindowsUpdate
         IUpdateDownloadResult GetUpdateResult(long updateIndex);
     }
     [ComImport]
-        [Guid("C574DE85-7358-43F6-AAE8-8697E62D8BA7")]
+    [Guid("C574DE85-7358-43F6-AAE8-8697E62D8BA7")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IDownloadJob {
-        object AsyncState {get;}
+    public interface IDownloadJob
+    {
+        object AsyncState { get; }
         bool IsCompleted { get; }
         dynamic Updates { get; }
         IDownloadProgress GetProgress();
         void RequestAbort();
     }
     [ComImport]
-        [Guid("324FF2C6-4981-4B04-9412-57481745AB24")]
+    [Guid("324FF2C6-4981-4B04-9412-57481745AB24")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IDownloadProgressChangedCallbackArgs {
+    public interface IDownloadProgressChangedCallbackArgs
+    {
         IDownloadProgress Progress { get; }
     }
     [ComImport]
     [Guid("8C3F1CDD-6173-4591-AEBD-A56A53CA77C1")]
+
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IDownloadProgressChangedCallback {
+    public interface IDownloadProgressChangedCallback
+    {
         void Invoke(IDownloadJob downloadJob, IDownloadProgressChangedCallbackArgs callbackArgs);
     }
     [ComImport]
-        [Guid("FA565B23-498C-47A0-979D-E7D5B1813360")]
+    [Guid("FA565B23-498C-47A0-979D-E7D5B1813360")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IDownloadCompletedCallbackArgs {
+    public interface IDownloadCompletedCallbackArgs
+    {
 
     }
     [ComImport]
-        [Guid("77254866-9F5B-4C8E-B9E2-C77A8530D64B")]
+    [Guid("77254866-9F5B-4C8E-B9E2-C77A8530D64B")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IDownloadCompletedCallback {
+    public interface IDownloadCompletedCallback
+    {
         void Invoke(IDownloadJob downloadJob, IDownloadCompletedCallbackArgs callbackArgs);
     }
     [ComImport]
-        [Guid("DAA4FDD0-4727-4DBE-A1E7-745DCA317144")]
+    [Guid("DAA4FDD0-4727-4DBE-A1E7-745DCA317144")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IDownloadResult {
+    public interface IDownloadResult
+    {
         int HResult { get; }
         OperationResultCode ResultCode { get; }
         IUpdateDownloadResult GetUpdateResult(long updateIndex);
