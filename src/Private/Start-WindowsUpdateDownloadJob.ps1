@@ -4,7 +4,7 @@ function Start-WindowsUpdateDownloadJob {
     [CmdletBinding()]
     param(
         [Parameter(ValueFromPipeline)]
-        [psobject[]] # Cannot apply type constraint because of COm object inheritance (some are IUpdae, some are IDriverUpdate)
+        [KPBSD.PowerShell.WindowsUpdate.UpdateModel[]]
         $WindowsUpdates,
 
         [Parameter(Mandatory)]
@@ -22,7 +22,7 @@ function Start-WindowsUpdateDownloadJob {
     }
     process {
         foreach ($Update in $WindowsUpdates) {
-            [void]$AllWindowsUpdates.Add($Update)
+            [void]$AllWindowsUpdates.Add($Update.ComObject)
         }
     }
     end {

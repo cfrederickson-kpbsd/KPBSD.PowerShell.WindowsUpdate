@@ -1,6 +1,6 @@
 function Get-WindowsUpdateHistory {
     [Alias('gwuh')]
-    [OutputType('System.__ComObject#{c2bfb780-4539-4132-ab8c-0a8772013ab6}')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel])]
     [CmdletBinding(DefaultParameterSetName = 'TitleSet', PositionalBinding = $false)]
     param(
         [Parameter(ParameterSetName = 'TitleSet', Position = 0)]
@@ -41,7 +41,7 @@ function Get-WindowsUpdateHistory {
         # Process in pages. Particularly in case we're running in the center of a pipeline
         # so that we don't buffer all results before output
 
-        $OperationTypeId = $Type -as [KPBSD.PowerShell.WindowsUpdate.OperationType]
+        $OperationTypeId = $Type -as [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]
         $CurrentPageNumber = 0
         $PageSize = 25
         $UpdateIdsNotMatched = [System.Collections.Generic.HashSet[string]]::new([string[]]$UpdateId, [System.StringComparer]::OrdinalIgnoreCase)
@@ -101,7 +101,7 @@ function Get-WindowsUpdateHistory {
 
                 [void]$TitlesNotMatched.Remove($history.Title)
                 [void]$UpdateIdsNotMatched.Remove($history.UpdateIdentity.UpdateId)
-                $history
+                [KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel]$history
             }
             $CurrentPageNumber += 1
         }

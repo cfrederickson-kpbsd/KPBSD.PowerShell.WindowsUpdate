@@ -12,9 +12,14 @@ $SourceDir = Join-Path $ProjectDir 'src'
 $ScriptFilesToImport = Get-ChildItem -Path $SourceDir -Include '*.ps1' -Recurse
 $CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse
 
-$TempAssemblyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate.dll'
-if (Test-Path $TempAssemblyPath) {
-    Remove-Item $TempAssemblyPath -ErrorAction Stop
+$TempAssemblyPathBase = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate'
+# Remove any previous iterations of the assembly that are no longer in use
+Remove-Item -Path "$TempAssemblyPathBase*.dll" -ErrorAction Ignore
+$TempAssemblyPath = "$TempAssemblyPathBase.dll"
+[int]$TempAssemblyPathId = 0
+while (Test-Path $TempAssemblyPath) {
+    $TempAssemblyPathId++
+    $TempAssemblyPath = "$TempAssemblyPathBase$TempAssemblyPathId.dll"
 }
 Add-Type -Path $CSharpFilesToLoad -IgnoreWarnings -OutputAssembly $TempAssemblyPath
 Import-Module $TempAssemblyPath

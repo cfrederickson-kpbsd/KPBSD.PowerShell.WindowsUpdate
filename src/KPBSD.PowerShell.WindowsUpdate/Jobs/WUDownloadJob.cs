@@ -82,7 +82,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
                     {
                         if (update != null)
                         {
-                            this.Output.Add(PSObject.AsPSObject(update));
+                            this.Output.Add(PSObject.AsPSObject(Model.CreateModel(update)));
                         }
                     }
                     break;

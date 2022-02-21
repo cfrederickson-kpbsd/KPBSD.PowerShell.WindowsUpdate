@@ -2,9 +2,9 @@ Import-Module (Join-Path (Split-Path $PSScriptRoot -Parent) "Build\Debug\KPBSD.P
 
 Describe 'Get-WindowsUpdateHistory' {
     Context 'general' {
-        It 'returns ''System.__ComObject#{c2bfb780-4539-4132-ab8c-0a8772013ab6}''' {
+        It 'returns ''KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel''' {
             $UpdateHistory = Get-WindowsUpdateHistory
-            $UpdateHistory[0].PSTypeNames | Should -Contain 'System.__ComObject#{c2bfb780-4539-4132-ab8c-0a8772013ab6}'
+            $UpdateHistory[0].PSTypeNames | Should -Contain 'KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel'
         }
     }
     InModuleScope 'KPBSD.PowerShell.WindowsUpdate' {
@@ -29,21 +29,21 @@ Describe 'Get-WindowsUpdateHistory' {
                             UpdateIdentity = [PSCustomObject]@{UpdateId = 'c6e36491-901d-4385-8f0c-1302fb321a58'}
                             Date = [datetime]'2020-01-01 0:00:00'
                             ServerSelection = [KPBSD.PowerShell.WindowsUpdate.ServerSelection]'ManagedServer'
-                            Operation = [KPBSD.PowerShell.WindowsUpdate.OperationType]'Installation'
+                            Operation = [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]'Installation'
                         }
                         [PSCustomObject]@{
                             Title = 'Some Windows Update Package #2'
                             UpdateIdentity = [PSCustomObject]@{UpdateId = 'b43132bb-0e1a-4685-aed3-51b43f60ed0c'}
                             Date = [datetime]'2020-02-01 0:00:00'
                             ServerSelection = [KPBSD.PowerShell.WindowsUpdate.ServerSelection]'ManagedServer'
-                            Operation = [KPBSD.PowerShell.WindowsUpdate.OperationType]'Uninstallation'
+                            Operation = [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]'Uninstallation'
                         }
                         [PSCustomObject]@{
                             Title = 'Any Other Incremental Upgrade'
                             UpdateIdentity = [PSCustomObject]@{UpdateId = '86fdd438-d106-4e17-bb7e-c1e89f010c3e'}
                             Date = [datetime]'2020-03-01 0:00:00'
                             ServerSelection = [KPBSD.PowerShell.WindowsUpdate.ServerSelection]'WindowsUpdate'
-                            Operation = [KPBSD.PowerShell.WindowsUpdate.OperationType]'Installation'
+                            Operation = [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]'Installation'
                         }
                     }
                     $Searcher
@@ -89,7 +89,7 @@ Describe 'Get-WindowsUpdateHistory' {
             It 'filters by Operation' {
                 $Updates = @(Get-WindowsUpdateHistory -Type 'Installation')
                 $Updates | Should -HaveCount 2
-                $Updates.Operation | Should -Be ([KPBSD.PowerShell.WindowsUpdate.OperationType]::Installation, [KPBSD.PowerShell.WindowsUpdate.OperationType]::Installation)
+                $Updates.Operation | Should -Be ([KPBSD.PowerShell.WindowsUpdate.UpdateOperation]::Installation, [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]::Installation)
             }
         }
         Context 'error reporting' {
@@ -113,21 +113,21 @@ Describe 'Get-WindowsUpdateHistory' {
                             UpdateId = 'c6e36491-901d-4385-8f0c-1302fb321a58'
                             Date = [datetime]'2020-01-01 0:00:00'
                             ServerSelection = [KPBSD.PowerShell.WindowsUpdate.ServerSelection]'ManagedServer'
-                            Operation = [KPBSD.PowerShell.WindowsUpdate.OperationType]'Installation'
+                            Operation = [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]'Installation'
                         }
                         [PSCustomObject]@{
                             Title = 'Some Windows Update Package #2'
                             UpdateId = 'b43132bb-0e1a-4685-aed3-51b43f60ed0c'
                             Date = [datetime]'2020-02-01 0:00:00'
                             ServerSelection = [KPBSD.PowerShell.WindowsUpdate.ServerSelection]'ManagedServer'
-                            Operation = [KPBSD.PowerShell.WindowsUpdate.OperationType]'Uninstallation'
+                            Operation = [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]'Uninstallation'
                         }
                         [PSCustomObject]@{
                             Title = 'Any Other Incremental Upgrade'
                             UpdateId = '86fdd438-d106-4e17-bb7e-c1e89f010c3e'
                             Date = [datetime]'2020-03-01 0:00:00'
                             ServerSelection = [KPBSD.PowerShell.WindowsUpdate.ServerSelection]'WindowsUpdate'
-                            Operation = [KPBSD.PowerShell.WindowsUpdate.OperationType]'Installation'
+                            Operation = [KPBSD.PowerShell.WindowsUpdate.UpdateOperation]'Installation'
                         }
                     }
                     $Searcher

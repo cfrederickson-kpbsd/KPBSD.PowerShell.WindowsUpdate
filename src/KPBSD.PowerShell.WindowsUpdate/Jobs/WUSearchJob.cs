@@ -207,7 +207,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 {
                     if (_clientFilterParameters.Filter(result))
                     {
-                        this.Output.Add(PSObject.AsPSObject(result));
+                        this.Output.Add(PSObject.AsPSObject(Model.CreateModel(result)));
                     }
                 }
                 

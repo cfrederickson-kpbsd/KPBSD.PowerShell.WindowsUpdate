@@ -82,7 +82,7 @@ function New-DynamicParameter {
             $pstypename = [PSTypeNameAttribute]::new($ParameterType)
         }
         $ParameterAttribute = [Parameter]::new()
-        $IncludeParameter = $false
+        [bool]$IncludeParameter = -not $Attributes
         if ($PSBoundParameters.ContainsKey('Mandatory')) { $ParameterAttribute.Mandatory = $Mandatory ; $IncludeParameter = $true }
         if ($PSBoundParameters.ContainsKey('Position')) { $ParameterAttribute.Position = $Position ; $IncludeParameter = $true }
         if ($PSBoundParameters.ContainsKey('DontShow')) { $ParameterAttribute.DontShow = $DontShow ; $IncludeParameter = $true }

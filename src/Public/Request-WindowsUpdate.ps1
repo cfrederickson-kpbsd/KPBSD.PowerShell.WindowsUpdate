@@ -1,6 +1,6 @@
 function Request-WindowsUpdate {
     [Alias('Download-WindowsUpdate', 'dlwu', 'rqwu')]
-    [OutputType([object])]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel])]
     [CmdletBinding(SupportsShouldProcess, PositionalBinding = $false, DefaultParameterSetName = 'TitleSet')]
     param(
         [Parameter(ParameterSetName = 'TitleSet', Mandatory, Position = 0)]
@@ -12,10 +12,7 @@ function Request-WindowsUpdate {
 
         [Parameter(ParameterSetName = 'UpdateSet', Mandatory, ValueFromPipeline)]
         [Parameter(ParameterSetName = 'UpdatePassThruSet', Mandatory, ValueFromPipeline)]
-        # [PSTypeName('System.__ComObject#{c1c2f21a-d2f4-4902-b5c6-8a081c19a890}')]
-        # [PSTypeName('System.__ComObject#{70cf5c82-8642-42bb-9dbc-0cfd263c6c4f}')]
-        [KPBSD.PowerShell.WindowsUpdate.ValidateEitherTypeName('System.__ComObject#{70cf5c82-8642-42bb-9dbc-0cfd263c6c4f}', 'System.__ComObject#{c1c2f21a-d2f4-4902-b5c6-8a081c19a890}')]
-        [psobject[]]
+        [KPBSD.PowerShell.WindowsUpdate.UpdateModel[]]
         $WindowsUpdate,
 
         [Parameter(ParameterSetName = 'IdSet', Mandatory, ValueFromPipelineByPropertyName)]
@@ -56,7 +53,7 @@ function Request-WindowsUpdate {
             $WindowsUpdate = Get-WindowsUpdate -UpdateId $UpdateId
         }
         if ($ProcessPipelineAsIndividualJobs -or $null -eq $UpdatesToDownload) {
-            $UpdatesToDownload = [System.Collections.Generic.List[psobject]]::new()
+            $UpdatesToDownload = [System.Collections.Generic.List[KPBSD.PowerShell.WindowsUpdate.UpdateModel]]::new()
         }
 
         foreach ($Update in $WindowsUpdate) {
@@ -68,13 +65,13 @@ function Request-WindowsUpdate {
                     'ResourceExists',
                     $Update
                 )
-                $er.ErrorDetails = "The Windows Update '$($Update.Title)' ($($Update.UpdateId) revision $($Update.RevisionNumber)) is already downloaded onto the computer."
+                $er.ErrorDetails = "The Windows Update $($Update) is already downloaded onto the computer."
                 $PSCmdlet.WriteError($er)
                 continue
             }
             if ($PSCmdlet.ShouldProcess(
-                "Downloading Windows Update '$($Update.Title)' ($($Update.UpdateId) revision $($Update.RevisionNumber)).",
-                "Download Windows Update '$($Update.Title)' ($($Update.UpdateId) revision $($Update.RevisionNumber))?",
+                "Downloading Windows Update $Update.",
+                "Download Windows Update $Update?",
                 'Confirm: download windows update')) {
                 $UpdatesToDownload.Add($Update)
             }

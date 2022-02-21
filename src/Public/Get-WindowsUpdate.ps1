@@ -1,5 +1,6 @@
 function Get-WindowsUpdate {
     [Alias('gwu')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel])]
     [CmdletBinding(DefaultParameterSetName = 'TitleSet', PositionalBinding = $false)]
     param(
         # Filter by title. Supports wildcards.
@@ -75,6 +76,7 @@ function Get-WindowsUpdate {
             $Searcher = New-WindowsUpdateSearcher
             $Job | Start-WindowsUpdateJob $Searcher | Where-Object { $AsJob }
             if (!$AsJob) {
+                Write-Debug "$(Get-Date -Format 'HH:mm:ss.ffff') [Get-WindowsUpdate] Adding job $Job to synchronous search queue."
                 $SynchronousJobs.Add($Job)
             }
 

@@ -1,6 +1,51 @@
 <?xml version="1.0"?>
 <Types>
     <Type>
+        <Name>KPBSD.PowerShell.WindowsUpdate.Model</Name>
+        <TypeConverter>
+            <TypeName>KPBSD.PowerShell.WindowsUpdate.ModelTypeConverter</TypeName>
+        </TypeConverter>
+    </Type>
+    <Type>
+        <Name>KPBSD.PowerShell.WindowsUpdate.UpdateModel</Name>
+        <Members>
+            <AliasProperty>
+                <Name>RequiresManualInstallation</Name>
+                <ReferencedMemberName>BrowseOnly</ReferencedMemberName>
+            </AliasProperty>
+            <AliasProperty>
+                <Name>InstalledForAnotherProduct</Name>
+                <ReferencedMemberName>IsPresent</ReferencedMemberName>
+            </AliasProperty>
+            <ScriptProperty>
+                <Name>UpdateId</Name>
+                <GetScriptBlock>
+                    $this.Identity.UpdateId
+                </GetScriptBlock>
+            </ScriptProperty>
+            <ScriptProperty>
+                <Name>RevisionNumber</Name>
+                <GetScriptBlock>
+                    $this.UpdateIdentity.RevisionNumber
+                </GetScriptBlock>
+            </ScriptProperty>
+        </Members>
+    </Type>
+    <Type>
+        <Name>KPBSD.PowerShell.WindowsUpdate.UpdateHistorymodel</Name>
+        <Members>
+            <ScriptProperty>
+                <Name>UpdateId</Name>
+                <GetScriptBlock>$this.UpdateIdentity.UpdateId</GetScriptBlock>
+            </ScriptProperty>
+            <ScriptProperty>
+                <Name>RevisionNumber</Name>
+                <GetScriptBlock>$this.UpdateIdentity.RevisionNumber</GetScriptBlock>
+            </ScriptProperty>
+        </Members>
+    </Type>
+    <!-- COM types -->
+    <Type>
         <Name>System.__ComObject#{c1c2f21a-d2f4-4902-b5c6-8a081c19a890}</Name>
         <Members>
             <AliasProperty>
@@ -68,22 +113,6 @@
             <ScriptProperty>
                 <Name>RevisionNumber</Name>
                 <GetScriptBlock>$this.UpdateIdentity.RevisionNumber</GetScriptBlock>
-            </ScriptProperty>
-            <ScriptProperty>
-                <Name>Categories</Name>
-                <GetScriptBlock>$this.Categories</GetScriptBlock>
-            </ScriptProperty>
-            <ScriptProperty>
-                <Name>ResultCode</Name>
-                <GetScriptBlock>[KPBSD.PowerShell.WindowsUpdate.OperationResultCode]$this.ResultCode</GetScriptBlock>
-            </ScriptProperty>
-            <ScriptProperty>
-                <Name>Operation</Name>
-                <GetScriptBlock>[KPBSD.PowerShell.WindowsUpdate.OperationType]$this.PSObject.BaseObject.Operation</GetScriptBlock>
-            </ScriptProperty>
-            <ScriptProperty>
-                <Name>ServerSelection</Name>
-                <GetScriptBlock>[KPBSD.PowerShell.WindowsUpdate.ServerSelection]$this.ServerSelection</GetScriptBlock>
             </ScriptProperty>
             <ScriptMethod>
                 <Name>ToString</Name>
