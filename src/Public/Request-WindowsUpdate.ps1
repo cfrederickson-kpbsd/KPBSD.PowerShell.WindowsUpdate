@@ -72,13 +72,13 @@ function Request-WindowsUpdate {
             if ($PSCmdlet.ShouldProcess(
                 "Downloading Windows Update $Update.",
                 "Download Windows Update $Update?",
-                'Confirm: download windows update')) {
+                'Confirm: download Windows Update')) {
                 $UpdatesToDownload.Add($Update)
             }
         }
 
         if ($ProcessPipelineAsIndividualJobs -and $UpdatesToDownload.Count -gt 0) {
-            $Job = Start-WindowsUpdateDownloadJob -WindowsUpdates $UpdatesToDownload -JobName $PSBoundParameters['JobName'] -Command $PSCmdlet.MyInvocation.Line
+            $Job = Start-WindowsUpdateDownloadJob -WindowsUpdates $UpdatesToDownload -JobName $PSBoundParameters['JobName'] -Command $MyInvocation.Line
             if ($AsJob) {
                 $Job
             }
@@ -90,7 +90,7 @@ function Request-WindowsUpdate {
     }
     end {
         if (!$ProcessPipelineAsIndividualJobs -and $UpdatesToDownload.Count -gt 0) {
-            $Job = Start-WindowsUpdateDownloadJob -WindowsUpdates $UpdatesToDownload -JobName $PSBoundParameters['JobName'] -Command $PSCmdlet.MyInvocation.Line
+            $Job = Start-WindowsUpdateDownloadJob -WindowsUpdates $UpdatesToDownload -JobName $PSBoundParameters['JobName'] -Command $MyInvocation.Line
             if ($AsJob) {
                 $Job
             }

@@ -115,6 +115,70 @@ namespace KPBSD.PowerShell.WindowsUpdate
     #endregion
 
     #region Install
-
+    
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("45F4F6F3-D602-4F98-9A8A-3EFA152AD2D3")]
+    public interface IInstallationCompletedCallback
+    {
+        void Invoke(IInstallationJob job, IInstallationCompletedCallbackArgs callbackArgs);
+    }
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("5C209F0B-BAD5-432A-9556-4699BED2638A")]
+    public interface IInstallationJob {
+        void CleanUp();
+        IInstallationProgress GetProgress();
+        void RequestAbort();
+        object AsyncState { get; }
+        bool IsCompleted { get; }
+        dynamic Updates { get; }
+    }
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("250E2106-8EFB-4705-9653-EF13C581B6A1")]
+    public interface IInstallationCompletedCallbackArgs {}
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [Guid("E01402D5-F8DA-43BA-A012-38894BD048F1")]
+    public interface IInstallationProgressChangedCallback
+    {
+        void Invoke(IInstallationJob job, IInstallationProgressChangedCallbackArgs callbackArgs);
+    }
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("345C8244-43A3-4E32-A368-65F073B76F36")]
+    public interface IInstallationProgress
+    {
+        long CurrentUpdateIndex { get; }
+        long CurrentUpdatePercentComplete { get; }
+        long PercentComplete { get; }
+        IUpdateInstallationResult GetUpdateResult(long updateIndex);
+    }
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("E4F14E1E-689D-4218-A0B9-BC189C484A01")]
+    public interface IInstallationProgressChangedCallbackArgs {
+        IInstallationProgress Progress { get; }
+    }
+    
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("D940F0F8-3CBB-4FD0-993F-471E7F2328AD")]
+    public interface IUpdateInstallationResult
+    {
+        public int HResult { get; }
+        public int RebootRequired { get; }
+        public OperationResultCode ResultCode { get; }
+    }
+    [ComImport()]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    [Guid("A43C56D6-7451-48D4-AF96-B6CD2D0D9B7A")]
+    public interface IInstallationResult {
+        int HResult { get; }
+        bool RebootRequired { get; }
+        OperationResultCode ResultCode { get; }
+        IUpdateInstallationResult GetUpdateResult(long updateIndex);
+    }
     #endregion
 }

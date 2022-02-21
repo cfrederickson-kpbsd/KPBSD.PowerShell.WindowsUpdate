@@ -9,7 +9,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     public class WindowsDriverUpdateEntryModel : Model, IEquatable<WindowsDriverUpdateEntryModel>
     {
         private readonly dynamic _comObject;
-        public WindowsDriverUpdateEntryModel(object comObject)
+        internal WindowsDriverUpdateEntryModel(object comObject)
         {
             this._comObject = comObject;
         }

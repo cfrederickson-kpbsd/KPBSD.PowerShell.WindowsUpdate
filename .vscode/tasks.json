@@ -6,7 +6,7 @@
         {
             "label": "Pester Tests",
             "type": "shell",
-            "command": "powershell.exe",
+            "command": "pwsh.exe",
             "args": [
                 "-noprofile",
                 "-command",

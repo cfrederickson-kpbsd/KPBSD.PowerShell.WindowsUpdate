@@ -30,7 +30,13 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 }
                 else
                 {
-                    return Activator.CreateInstance(type, comObject);
+                    return Activator.CreateInstance(
+                        type: type,
+                        bindingAttr: BindingFlags.NonPublic | BindingFlags.Instance,
+                        binder: null,
+                        args: new object[] { comObject },
+                        culture: System.Globalization.CultureInfo.CurrentCulture
+                        );
                 }
             }
             else
@@ -55,6 +61,10 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 array[i] = istringcoll[i];
             }
             return array;
+        }
+        internal Model()
+        {
+
         }
     }
 }

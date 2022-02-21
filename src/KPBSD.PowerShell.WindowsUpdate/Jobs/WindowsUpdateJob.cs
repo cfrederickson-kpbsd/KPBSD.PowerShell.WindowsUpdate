@@ -3,6 +3,8 @@ namespace KPBSD.PowerShell.WindowsUpdate
     using System;
     using System.Management.Automation;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
     using System.Threading;
 
     public abstract class WindowsUpdateJob : Job
@@ -176,6 +178,33 @@ namespace KPBSD.PowerShell.WindowsUpdate
         public override string ToString()
         {
             return this.Name;
+        }
+
+        
+        protected void WriteDebug(string message, [CallerMemberName] string methodName = "")
+        {
+            this.Debug.Add(new DebugRecord($"{DateTime.Now:HH:mm:ss.ffff} [{GetType().Name}.{methodName}:{Environment.ProcessorCount}] {message}"));
+        }
+        
+        protected void WriteOutputOrError(int hresult, OperationResultCode resultCode, dynamic update)
+        {
+            this.WriteDebug($"Download for update {update.Title} completed with hresult {hresult} and result code {resultCode}.");
+            if (hresult == 0)
+            {
+                this.Output.Add(PSObject.AsPSObject(Model.CreateModel(update)));
+            }
+            else
+            {
+                var exn = new COMException(null, hresult);
+                var er = new ErrorRecord(
+                    exn,
+                    "DownloadError",
+                    ErrorCategory.NotSpecified,
+                    update
+                );
+                this.Error.Add(er);
+            }
+            this.WriteDebug("Completed writing download result.");
         }
     }
 }

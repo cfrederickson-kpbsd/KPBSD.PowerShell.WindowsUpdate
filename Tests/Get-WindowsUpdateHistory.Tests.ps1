@@ -10,6 +10,7 @@ Describe 'Get-WindowsUpdateHistory' {
     InModuleScope 'KPBSD.PowerShell.WindowsUpdate' {
         Context 'filtering' {
             BeforeAll {
+                Mock 'ConvertTo-WindowsUpdateModel' { param($InputObject, [string]$RequiredType) $InputObject }
                 Mock 'New-WindowsUpdateSearcher' {
                     # We call GetTotalHistoryCount() and then page through the results of QueryHistory(_, _)
                     # So we need to mock both methods

@@ -34,7 +34,7 @@ InModuleScope 'KPBSD.PowerShell.WindowsUpdate' {
                 $DescriptiveError | Should -BeTrue -Because 'the error must not be null'
                 $DescriptiveError.ErrorDetails | Should -BeTrue
                 $DescriptiveError.ErrorDetails.RecommendedAction | Should -BeTrue
-                $DescriptiveError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::AuthenticationError)
+                $DescriptiveError.CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::PermissionDenied)
                 $DescriptiveError.FullyQualifiedErrorId | Should -BeLike '*Unauthorized*'
             }
         }

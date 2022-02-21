@@ -26,13 +26,16 @@
             <ScriptProperty>
                 <Name>RevisionNumber</Name>
                 <GetScriptBlock>
-                    $this.UpdateIdentity.RevisionNumber
+                    $this.Identity.RevisionNumber
                 </GetScriptBlock>
             </ScriptProperty>
         </Members>
+        <TypeConverter>
+            <TypeName>KPBSD.PowerShell.WindowsUpdate.ModelTypeConverter</TypeName>
+        </TypeConverter>
     </Type>
     <Type>
-        <Name>KPBSD.PowerShell.WindowsUpdate.UpdateHistorymodel</Name>
+        <Name>KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel</Name>
         <Members>
             <ScriptProperty>
                 <Name>UpdateId</Name>
@@ -43,6 +46,9 @@
                 <GetScriptBlock>$this.UpdateIdentity.RevisionNumber</GetScriptBlock>
             </ScriptProperty>
         </Members>
+        <TypeConverter>
+            <TypeName>KPBSD.PowerShell.WindowsUpdate.ModelTypeConverter</TypeName>
+        </TypeConverter>
     </Type>
     <!-- COM types -->
     <Type>

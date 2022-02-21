@@ -101,7 +101,7 @@ function Get-WindowsUpdateHistory {
 
                 [void]$TitlesNotMatched.Remove($history.Title)
                 [void]$UpdateIdsNotMatched.Remove($history.UpdateIdentity.UpdateId)
-                [KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel]$history
+                ConvertTo-WindowsUpdateModel $History -RequiredType KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel
             }
             $CurrentPageNumber += 1
         }

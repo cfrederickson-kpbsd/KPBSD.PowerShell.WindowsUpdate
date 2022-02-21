@@ -11,7 +11,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     public class InstallationBehaviorModel : Model, IEquatable<InstallationBehaviorModel>
     {
         private readonly dynamic _comObject;
-        public InstallationBehaviorModel(object comObject)
+        internal InstallationBehaviorModel(object comObject)
         {
             this._comObject = comObject;
         }

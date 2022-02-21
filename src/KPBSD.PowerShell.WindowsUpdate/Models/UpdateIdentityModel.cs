@@ -11,7 +11,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     public class UpdateIdentityModel : Model, IEquatable<UpdateIdentityModel>
     {
         private readonly dynamic _comObject;
-        public UpdateIdentityModel(object comObject)
+        internal UpdateIdentityModel(object comObject)
         {
             this._comObject = comObject;
         }

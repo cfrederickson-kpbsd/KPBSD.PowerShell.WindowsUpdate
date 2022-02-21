@@ -36,7 +36,7 @@ function Invoke-SynchronousJob {
             $ErrorActionPreference = 'SilentlyContinue'
             Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Removing sync jobs (Errors: $($Error.Count)). $($AllJobs)."
             $AllJobs | Where-Object 'State' -eq 'Running' | Stop-Job
-            Wait-Job -Job $AllJobs
+            Wait-Job -Job $AllJobs | Out-Null
             Remove-Job -Force -Job $AllJobs
             Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Sync jobs cleaned up (Errors: $($Error.Count)). $(Get-Job)"
         }

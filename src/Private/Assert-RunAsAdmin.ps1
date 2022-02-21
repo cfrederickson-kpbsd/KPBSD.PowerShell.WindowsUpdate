@@ -42,7 +42,7 @@ function Assert-RunAsAdmin {
                 $ErrorRecord = [System.Management.Automation.ErrorRecord]::new(
                     $Exception,
                     'Unauthorized',
-                    [System.Management.Automation.ErrorCategory]::AuthenticationError,
+                    [System.Management.Automation.ErrorCategory]::PermissionDenied,
                     $null
                 )
                 $ErrorRecord.ErrorDetails = $Message

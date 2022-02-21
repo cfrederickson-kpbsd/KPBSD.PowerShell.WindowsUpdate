@@ -33,17 +33,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         {
             this.WriteDebug($"({callbackArgs.Progress.PercentComplete}%) Processing progress changed callback at index {callbackArgs.Progress.CurrentUpdateIndex} ({callbackArgs.Progress.CurrentUpdatePercentComplete}%) which is at phase {callbackArgs.Progress.CurrentUpdateDownloadPhase}.");
             // write progress for the individual download first (completes the progress bar if applicable)
-            try {
             this.WriteProgress((int)callbackArgs.Progress.CurrentUpdateIndex, (int)callbackArgs.Progress.CurrentUpdatePercentComplete, callbackArgs.Progress.CurrentUpdateBytesDownloaded, callbackArgs.Progress.CurrentUpdateBytesToDownload, callbackArgs.Progress.CurrentUpdateDownloadPhase.ToString());
-            }
-            catch (Exception e) {
-                this.Error.Add(new ErrorRecord(
-                    e,
-                    "Unknown",
-                    ErrorCategory.NotSpecified,
-                    callbackArgs
-                ));
-            }
             // if the download completed, write the downloaded update to the job output
             if (callbackArgs.Progress.CurrentUpdatePercentComplete >= 100)
             {
@@ -107,30 +97,6 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 progress.ParentActivityId = this.Id;
             }
             this.Progress.Add(progress);
-        }
-        private void WriteOutputOrError(int hresult, OperationResultCode resultCode, dynamic update)
-        {
-            this.WriteDebug($"Download for update {update.Title} completed with hresult {hresult} and result code {resultCode}.");
-            if (hresult == 0)
-            {
-                this.Output.Add(PSObject.AsPSObject(Model.CreateModel(update)));
-            }
-            else
-            {
-                var exn = new COMException(null, hresult);
-                var er = new ErrorRecord(
-                    exn,
-                    "DownloadError",
-                    ErrorCategory.NotSpecified,
-                    update
-                );
-                this.Error.Add(er);
-            }
-            this.WriteDebug("Completed writing download result.");
-        }
-        private void WriteDebug(string message, [CallerMemberName] string methodName = "")
-        {
-            this.Debug.Add(new DebugRecord($"{DateTime.Now:HH:mm:ss.ffff} [WUDownloadJob.{methodName}:{Environment.ProcessorCount}] {message}"));
         }
         private void OnDownloadCompleted(IDownloadJob downloadJob, IDownloadCompletedCallbackArgs callbackArgs)
         {

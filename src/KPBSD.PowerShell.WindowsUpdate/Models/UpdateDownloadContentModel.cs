@@ -11,7 +11,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     public class UpdateDownloadContentModel : Model, IEquatable<UpdateDownloadContentModel>
     {
         private readonly dynamic _comObject;
-        public UpdateDownloadContentModel(object comObject)
+        internal UpdateDownloadContentModel(object comObject)
         {
             this._comObject = comObject;
         }

@@ -7,7 +7,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     public class ImageInformationModel : Model, IEquatable<ImageInformationModel>
     {
         private readonly dynamic _comObject;
-        public ImageInformationModel(object comObject)
+        internal ImageInformationModel(object comObject)
         {
             this._comObject = comObject;
         }
@@ -28,6 +28,11 @@ namespace KPBSD.PowerShell.WindowsUpdate
         public override int GetHashCode()
         {
             return this._comObject.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return AltText;
         }
     }
 }

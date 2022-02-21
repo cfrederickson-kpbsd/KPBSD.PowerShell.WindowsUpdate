@@ -11,7 +11,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     public class UpdateModel : Model, IEquatable<UpdateModel>
     {
         private readonly dynamic _comObject;
-        public UpdateModel(object comObject)
+        internal UpdateModel(object comObject)
         {
             this._comObject = comObject;
         }
