@@ -141,6 +141,20 @@ namespace KPBSD.PowerShell.WindowsUpdate
                     this.GetBeginJobParameters()
                 );
             }
+            catch (COMException e)
+            {
+                ErrorRecord error;
+                if (ComErrorCodes.TryGetErrorDetails(e.ErrorCode, out _, out _, out _))
+                {
+                    error = ComErrorCodes.CreateErrorRecord(e.ErrorCode, e, null);
+                    this.Error.Add(error);
+                    this.SetJobState(JobState.Failed);
+                }
+                else
+                {
+                    this.FailWithException(e);
+                }
+            }
             catch (Exception e)
             {
                 this.FailWithException(e);
@@ -186,25 +200,43 @@ namespace KPBSD.PowerShell.WindowsUpdate
             this.Debug.Add(new DebugRecord($"{DateTime.Now:HH:mm:ss.ffff} [{GetType().Name}.{methodName}:{Environment.ProcessorCount}] {message}"));
         }
         
-        protected void WriteOutputOrError(int hresult, OperationResultCode resultCode, dynamic update)
+        protected void WriteOutputOrError(int hresult, OperationResultCode resultCode, object update)
         {
-            this.WriteDebug($"Download for update {update.Title} completed with hresult {hresult} and result code {resultCode}.");
             if (hresult == 0)
             {
-                this.Output.Add(PSObject.AsPSObject(Model.CreateModel(update)));
+                try {
+                    var model = Model.CreateModel(update);
+                    var pso = PSObject.AsPSObject(model);
+                    this.Output.Add(pso);
+                }
+                catch (ItemNotFoundException e)
+                {
+                    this.Warning.Add(new WarningRecord("Could not parse job output as WindowsUpdate model. Additional data is included in the error stream. Error message: " + e.Message));
+                    var infoRecord = new InformationRecord(e, this.Name);
+                    infoRecord.Tags.Add("Error");
+                    this.Information.Add(infoRecord);
+                    this.Output.Add(PSObject.AsPSObject(update));
+                }
+                catch (FormatException e)
+                {
+                    var infoRecord = new InformationRecord(e, this.Name);
+                    infoRecord.Tags.Add("Error");
+                    this.Information.Add(infoRecord);
+                    this.Output.Add(PSObject.AsPSObject(update));
+                }
             }
             else
             {
-                var exn = new COMException(null, hresult);
-                var er = new ErrorRecord(
-                    exn,
-                    "DownloadError",
-                    ErrorCategory.NotSpecified,
-                    update
-                );
+                var er = ComErrorCodes.CreateErrorRecord(hresult, null, update);
+                // var exn = new COMException(null, hresult);
+                // var er = new ErrorRecord(
+                //     exn,
+                //     "DownloadError",
+                //     ErrorCategory.NotSpecified,
+                //     update
+                // );
                 this.Error.Add(er);
             }
-            this.WriteDebug("Completed writing download result.");
         }
     }
 }

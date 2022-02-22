@@ -1,6 +1,9 @@
 function Clear-WindowsUpdateDownloadCache {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param()
+    begin {
+        Assert-RunAsAdmin -Operation 'clear Windows Update download cache' | Out-Null
+    }
     process {
         $WindowsUpdateService = Get-Service -Name 'wuauserv' -ErrorAction Stop
         $reason = [System.Management.Automation.ShouldProcessReason]::None

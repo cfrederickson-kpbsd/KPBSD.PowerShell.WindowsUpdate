@@ -41,7 +41,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
             }
             else
             {
-                throw new ItemNotFoundException($"Could not parse Guid for object with type name {pso.TypeNames[0]}.");
+                throw new FormatException($"Could not parse Guid for object with type name {pso.TypeNames[0]}.");
             }
         }
         protected static T[] ToModelArray<T>(dynamic collection)

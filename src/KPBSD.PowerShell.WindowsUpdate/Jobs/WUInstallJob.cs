@@ -31,7 +31,6 @@ namespace KPBSD.PowerShell.WindowsUpdate
 
         private void OnInstallationCompleted(IInstallationJob installationJob, IInstallationCompletedCallbackArgs args)
         {
-            this.WriteDebug("Installation completed.");
             var result = (IInstallationResult)this.WUJobSource!.GetType().InvokeMember(
                 "EndInstall",
                 BindingFlags.InvokeMethod,
@@ -41,17 +40,9 @@ namespace KPBSD.PowerShell.WindowsUpdate
             );
             if (result.HResult != 0)
             {
-                this.WriteDebug($"Installation has exceptional HResult {result.HResult}.");
-                var exn = new COMException(null, result.HResult);
-                var er = new ErrorRecord(
-                    exn,
-                    "InstallationError",
-                    ErrorCategory.ReadError,
-                    result
-                );
+                var er = ComErrorCodes.CreateErrorRecord(result.HResult, null, result);
                 this.Error.Add(er);
             }
-            this.WriteDebug($"Installation has result code {result.ResultCode}.");
             switch (result.ResultCode)
             {
                 case OperationResultCode.Aborted:

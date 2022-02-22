@@ -20,9 +20,9 @@ namespace KPBSD.PowerShell.WindowsUpdate
 		public AutoSelectionMode AutoSelection { get { return (AutoSelectionMode)(int)_comObject.AutoSelection; } }
 		public bool AutoSelectOnWebSites { get { return _comObject.AutoSelectOnWebSites; } }
 		public bool BrowseOnly { get { return _comObject.BrowseOnly; } }
-		public UpdateModel[] BundledUpdates { get { return ToModelArray(_comObject.BundledUpdates); } }
+		public UpdateModel[] BundledUpdates { get { return ToModelArray<UpdateModel>(_comObject.BundledUpdates); } }
 		public bool CanRequireSource { get { return _comObject.CanRequireSource; } }
-		public CategoryModel[] Categories { get { return ToModelArray(_comObject.Categories); } }
+		public CategoryModel[] Categories { get { return ToModelArray<CategoryModel>(_comObject.Categories); } }
 		public string[] CveIDs { get { return ToStringArray(_comObject.CveIDs); } }
 		public object Deadline { get { return _comObject.Deadline; } }
 		public bool DeltaCompressedContentAvailable { get { return _comObject.DeltaCompressedContentAvailable; } }
