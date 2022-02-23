@@ -125,7 +125,7 @@ function Install-WindowsUpdate {
             }
             Write-Debug "$(Get-Date -Format 'HH:mm:ss.ffff') [Install-WindowsUpdate] Update $wu has accepted EULA. $($wu.EulaAccepted)"
             if ($PSCmdlet.ShouldProcess(
-                "Downloading Windows Update $Update.",
+                "Installing Windows Update $Update.",
                 "Install Windows Update $Update?",
                 'Confirm: install Windows Update'
             ))

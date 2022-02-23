@@ -7,9 +7,16 @@ namespace KPBSD.PowerShell.WindowsUpdate
     using System.Runtime.InteropServices;
     using System.Threading;
 
+    /// <summary>
+    /// Base class for jobs that represent the COM job for Windows Update API.
+    /// </summary>
     public abstract class WindowsUpdateJob : Job
     {
-        public override string Location { get { return ""; } }
+        /// <summary>
+        /// Location at which the job is running. The computer name of the local host.
+        /// </summary>
+        /// <value></value>
+        public override string Location { get { return Environment.MachineName; } }
         /// <summary>
         /// COM object representing the async operation.
         /// </summary>
@@ -21,6 +28,11 @@ namespace KPBSD.PowerShell.WindowsUpdate
         /// <value></value>
         protected object? WUJobSource { get; private set; }
         protected abstract string Operation { get; }
+        /// <summary>
+        /// Gets the completion status of the Windows Update operation if it has completed,
+        /// otherwise returns "Incomplete".
+        /// </summary>
+        /// <value></value>
         public override string StatusMessage
         {
             get
@@ -170,6 +182,10 @@ namespace KPBSD.PowerShell.WindowsUpdate
         /// </summary>
         protected virtual void AssertCanStart() {}
         
+        /// <summary>
+        /// Clean up the job.
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing) {
@@ -177,29 +193,52 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 {
                     this.StopJob();
                 }
+                else if (this.JobStateInfo.State == JobState.NotStarted)
+                {
+                    this.SetJobState(JobState.Stopped);
+                }
                 if (this.WUApiJob != null)
                 {
-                    ThreadPool.QueueUserWorkItem(CleanUpAsThreadPoolItem, (object)this.WUApiJob);
+                    ThreadPool.QueueUserWorkItem(ThreadPoolCleanupWork, (object)this.WUApiJob);
                 }
             }
             base.Dispose(disposing);
         }
-        private static void CleanUpAsThreadPoolItem(dynamic state)
+        /// <summary>
+        /// Calls the CleanUp() method on <paramref name="state"/>. WaitCallback delegate to pass to ThreadPoool.QueueUserWorkItem with the state being this.WUApiJob.
+        /// </summary>
+        /// <param name="state"></param>
+        private static void ThreadPoolCleanupWork(dynamic state)
         {
             state.CleanUp();
         }
+        /// <summary>
+        /// Returns the name of the job.
+        /// </summary>
+        /// <returns>The name of the job.</returns>
 
         public override string ToString()
         {
             return this.Name;
         }
 
-        
+        /// <summary>
+        /// Write a message to the job's debug stream.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="methodName"></param>
         protected void WriteDebug(string message, [CallerMemberName] string methodName = "")
         {
             this.Debug.Add(new DebugRecord($"{DateTime.Now:HH:mm:ss.ffff} [{GetType().Name}.{methodName}:{Environment.ProcessorCount}] {message}"));
         }
-        
+        /// <summary>
+        /// Write an error record to the job's error stream if HResult indicates an unsuccessful state.
+        /// If successful, the <paramref name="update"/> object will be written to the job's output
+        /// stream.
+        /// </summary>
+        /// <param name="hresult"></param>
+        /// <param name="resultCode"></param>
+        /// <param name="update"></param>
         protected void WriteOutputOrError(int hresult, OperationResultCode resultCode, object update)
         {
             if (hresult == 0)
@@ -228,13 +267,6 @@ namespace KPBSD.PowerShell.WindowsUpdate
             else
             {
                 var er = ComErrorCodes.CreateErrorRecord(hresult, null, update);
-                // var exn = new COMException(null, hresult);
-                // var er = new ErrorRecord(
-                //     exn,
-                //     "DownloadError",
-                //     ErrorCategory.NotSpecified,
-                //     update
-                // );
                 this.Error.Add(er);
             }
         }

@@ -58,14 +58,10 @@ namespace KPBSD.PowerShell.WindowsUpdate
         }
         private void WriteProgress(int? currentUpdateIndex, int percentComplete, decimal bytesDownloaded, decimal totalBytes, string? currentOperation)
         {
-            int activityId;
+            var activityId = (this.Id + 1) << 5;
             if (currentUpdateIndex.HasValue)
             {
-                activityId = this.Id + 1 + currentUpdateIndex.Value;
-            }
-            else
-            {
-                activityId = this.Id;
+                activityId += (1 + currentUpdateIndex.Value);
             }
             var isComplete = percentComplete >= 100;
             string activity;
@@ -100,7 +96,6 @@ namespace KPBSD.PowerShell.WindowsUpdate
         }
         private void OnDownloadCompleted(IDownloadJob downloadJob, IDownloadCompletedCallbackArgs callbackArgs)
         {
-            this.WriteDebug("Download completed.");
             var result = (IDownloadResult)this.WUJobSource!.GetType().InvokeMember(
                 "EndDownload",
                 BindingFlags.InvokeMethod,

@@ -9,12 +9,33 @@ namespace KPBSD.PowerShell.WindowsUpdate
     public sealed class WUInstallJob : WindowsUpdateJob
     {
         private readonly HashSet<long> _completed;
+        private bool _isUninstallation;
         public WUInstallJob(string command, string jobName) : base(command, jobName)
         {
             _completed = new HashSet<long>();
         }
 
-        protected override string Operation => "Install";
+        public bool IsUninstallation {
+            get { return _isUninstallation; }
+            set {
+                AssertNotStarted();
+                _isUninstallation = value;
+            }
+        }
+        protected override string Operation 
+        {
+            get
+            {
+                if (IsUninstallation)
+                {
+                    return "Install";
+                }
+                else
+                {
+                    return "Uninstall";
+                }
+            }
+        }
 
         protected override object?[] GetBeginJobParameters()
         {
@@ -32,7 +53,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         private void OnInstallationCompleted(IInstallationJob installationJob, IInstallationCompletedCallbackArgs args)
         {
             var result = (IInstallationResult)this.WUJobSource!.GetType().InvokeMember(
-                "EndInstall",
+                string.Format("End{0}", this.Operation),
                 BindingFlags.InvokeMethod,
                 null,
                 this.WUJobSource,
@@ -92,14 +113,10 @@ namespace KPBSD.PowerShell.WindowsUpdate
 
         private void WriteProgress(int? currentUpdateIndex, int percentComplete, string? currentOperation = null)
         {
-            int activityId;
+            var activityId = (1 + this.Id) << 4;
             if (currentUpdateIndex.HasValue)
             {
-                activityId = this.Id + 1 + currentUpdateIndex.Value;
-            }
-            else
-            {
-                activityId = this.Id;
+                activityId += (1 + currentUpdateIndex.Value);
             }
             var isComplete = percentComplete >= 100;
             string activity;
