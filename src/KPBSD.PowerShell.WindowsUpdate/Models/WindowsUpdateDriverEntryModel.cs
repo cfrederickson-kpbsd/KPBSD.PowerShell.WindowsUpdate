@@ -13,6 +13,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         {
             this._comObject = comObject;
         }
+        [System.Management.Automation.Hidden]
         public object ComObject { get { return _comObject; } }
         public long DeviceProblemNumber { get { return _comObject.DeviceProblemNumber; } }
         public long DeviceStatus { get { return _comObject.DeviceStatus; } }

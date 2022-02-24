@@ -15,6 +15,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         {
             this._comObject = comObject;
         }
+        [System.Management.Automation.Hidden]
         public object ComObject { get { return _comObject; } }
         public string CategoryID { get { return _comObject.CategoryID; } }
 		public CategoryModel[] Children { get { return ToModelArray(_comObject.Children); } }

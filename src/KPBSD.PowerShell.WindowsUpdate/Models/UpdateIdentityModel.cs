@@ -15,6 +15,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         {
             this._comObject = comObject;
         }
+        [System.Management.Automation.Hidden]
         public object ComObject { get { return _comObject; } }
         public int RevisionNumber { get { return _comObject.RevisionNumber; } }
 		public string UpdateID { get { return _comObject.UpdateID; } }

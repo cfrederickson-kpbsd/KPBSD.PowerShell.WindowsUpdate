@@ -11,6 +11,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         {
             this._comObject = comObject;
         }
+        [System.Management.Automation.Hidden]
         public object ComObject { get { return _comObject; } }
         public string AltText { get { return _comObject.AltText; } }
         public long Height { get { return _comObject.Height; } }

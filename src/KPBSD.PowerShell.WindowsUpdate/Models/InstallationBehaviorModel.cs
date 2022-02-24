@@ -15,6 +15,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         {
             this._comObject = comObject;
         }
+        [System.Management.Automation.Hidden]
         public object ComObject { get { return _comObject; } }
         public bool CanRequestUserInput { get { return _comObject.CanRequestUserInput; } }
 		public InstallationImpact Impact { get { return (InstallationImpact)(int)_comObject.Impact; } }

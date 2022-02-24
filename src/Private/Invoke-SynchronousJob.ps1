@@ -24,21 +24,16 @@ function Invoke-SynchronousJob {
         $WhatIfPreference = $ConfirmPreference = $false
         try {
             Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Waiting for $($AllJobs.Count) job to be run as synchronous operations."
+            # Calling Receive-Job on all jobs together allows any job results to be exported in the order they are
+            # generated.
             Receive-Job -Wait -Job $AllJobs
-            # while ($AllJobs.Count -gt 0) {
-            #     $CompletedJob = Wait-Job -Job $AllJobs -Any
-            #     Receive-Job -Job $CompletedJob
-            #     [void]$AllJobs.Remove($CompletedJob)
-            #     Remove-Job -Job $CompletedJob
-            # }
         }
         finally {
             $ErrorActionPreference = 'SilentlyContinue'
-            Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Removing sync jobs (Errors: $($Error.Count)). $($AllJobs)."
+            Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Removing sync jobs."
             $AllJobs | Where-Object 'State' -eq 'Running' | Stop-Job
             Wait-Job -Job $AllJobs | Out-Null
             Remove-Job -Force -Job $AllJobs
-            Write-Debug "$(Get-Date -f 'HH:mm:ss.ffff') [Invoke-SynchronousJob] Sync jobs cleaned up (Errors: $($Error.Count)). $(Get-Job)"
         }
     }
 }

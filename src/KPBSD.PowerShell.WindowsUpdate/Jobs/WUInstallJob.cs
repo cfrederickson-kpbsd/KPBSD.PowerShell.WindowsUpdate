@@ -59,6 +59,10 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 this.WUJobSource,
                 new[] { installationJob }
             );
+            if (result.RebootRequired)
+            {
+                this.Warning.Add(new WarningRecord("One or more Windows Updates require the computer to restart before the operation can complete."));
+            }
             if (result.HResult != 0)
             {
                 var er = ComErrorCodes.CreateErrorRecord(result.HResult, null, result);

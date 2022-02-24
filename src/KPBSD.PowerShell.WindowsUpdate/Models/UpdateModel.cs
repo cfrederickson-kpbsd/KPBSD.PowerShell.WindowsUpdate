@@ -15,6 +15,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         {
             this._comObject = comObject;
         }
+        [System.Management.Automation.Hidden]
         public object ComObject { get { return _comObject; } }
         public AutoDownloadMode AutoDownload { get { return (AutoDownloadMode)(int)_comObject.AutoDownload; } }
 		public AutoSelectionMode AutoSelection { get { return (AutoSelectionMode)(int)_comObject.AutoSelection; } }
