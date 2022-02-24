@@ -21,7 +21,7 @@ function Hide-WindowsUpdate {
         $PassThru
     )
     begin {
-        Assert-RunAsAdmin -Operation 'hide Windows Update' | Out-Null
+        Assert-RunAsAdmin -Operation 'hide Windows Update' -AllowPowerUser | Out-Null
     }
     process {
         if ($PSCmdlet.ParameterSetName -eq 'TitleSet') {

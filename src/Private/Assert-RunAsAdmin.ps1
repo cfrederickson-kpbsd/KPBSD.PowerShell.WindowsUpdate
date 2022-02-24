@@ -9,9 +9,16 @@ function Assert-RunAsAdmin {
         [string]
         $Operation,
 
+        # Consequences if the user were to continue as non-admin. Generally only makes sense
+        # with -AsWarning.
         [Parameter()]
         [string[]]
         $Consequence,
+
+        # Test will pass if the user is a PowerUser or Admin.
+        [Parameter()]
+        [switch]
+        $AllowPowerUser,
 
         # Write a warning instead of throwing an error.
         [Parameter()]
@@ -19,7 +26,7 @@ function Assert-RunAsAdmin {
         $AsWarning
     )
     process {
-        if (Test-RunAsAdmin) {
+        if (Test-RunAsAdmin -AllowPowerUser:$AllowPowerUser) {
             Write-Verbose "Performing the operation '$Operation', which requires administrative privilages."
             $true
         }

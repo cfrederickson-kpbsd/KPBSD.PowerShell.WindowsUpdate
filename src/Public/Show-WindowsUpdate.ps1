@@ -21,7 +21,7 @@ function Show-WindowsUpdate {
         $PassThru
     )
     begin {
-        Assert-RunAsAdmin -Operation 'show Windows Update' | Out-Null
+        Assert-RunAsAdmin -Operation 'show Windows Update' -AllowPowerUser | Out-Null
     }
     process {
         if ($PSCmdlet.ParameterSetName -eq 'TitleSet') {
