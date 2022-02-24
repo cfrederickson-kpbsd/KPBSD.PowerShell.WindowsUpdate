@@ -1,4 +1,5 @@
 function Test-WindowsUpdateRebootRequired {
+    [Alias('twurr')]
     [OutputType([bool])]
     [CmdletBinding()]
     param(
