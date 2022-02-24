@@ -4,6 +4,20 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "build",
+            "type": "shell",
+            "command": "pwsh.exe",
+            "args": [
+                "-noprofile",
+                "-file",
+                {
+                    "quoting": "weak",
+                    "value": "${workspaceFolder}/Build/build.ps1 -Version 1.0.0"
+                }
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Pester Tests",
             "type": "shell",
             "command": "pwsh.exe",

@@ -1,4 +1,4 @@
-$script:WindowsUpdateSession
+$script:WindowsUpdateSession = $null
 
 function Get-WindowsUpdateSession {
     [CmdletBinding()]
