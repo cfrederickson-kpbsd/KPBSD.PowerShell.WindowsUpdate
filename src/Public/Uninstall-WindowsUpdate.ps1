@@ -1,5 +1,11 @@
 function Uninstall-WindowsUpdate {
-    # [OutputType([KPBSD.PowerShell.WindowsUpdate.WUUninstallJob])]
+    [Alias('uswu')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel], ParameterSetName = 'TitlePassThru')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel], ParameterSetName = 'IdPassThru')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel], ParameterSetName = 'UpdatePassThru')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.WUInstallJob], ParameterSetName = 'TitleAsJob')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.WUInstallJob], ParameterSetName = 'IdAsJob')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.WUInstallJob], ParameterSetName = 'UpdateAsJob')]
     [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'TitlePassThru')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName, ParameterSetName = 'TitlePassThru')]

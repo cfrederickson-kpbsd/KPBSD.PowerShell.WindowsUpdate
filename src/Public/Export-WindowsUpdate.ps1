@@ -1,4 +1,5 @@
 function Export-WindowsUpdate {
+    [Alias('epwu')]
     [OutputType([System.IO.FileInfo])]
     [CmdletBinding(SupportsShouldProcess)]
     param(

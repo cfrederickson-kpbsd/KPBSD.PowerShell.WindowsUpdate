@@ -34,5 +34,6 @@ if ($ExportAllFunctions) {
 }
 else {
     $PublicFunctions = $ScriptFilesToImport | Where-Object 'FullName' -like '*Public*' | Select-Object -ExpandProperty BaseName
-    Export-ModuleMember -Function $PublicFunctions
+    $PublicAliases = Get-Alias -Definition $PublicFunctions -ErrorAction Ignore | Select-Object -ExpandProperty Name
+    Export-ModuleMember -Function $PublicFunctions -Alias $PublicAliases
 }
