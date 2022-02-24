@@ -78,5 +78,28 @@
                 </TableRowEntries>
             </TableControl>
         </View>
+        <View>
+            <Name>Default</Name>
+            <ViewSelectedBy>
+                <TypeName>KPBSD.PowerShell.WindowsUpdate.AutomaticUpdateLastResults</TypeName>
+            </ViewSelectedBy>
+            <ListControl>
+                <ListEntries>
+                    <ListEntry>
+                        <ListItems>
+                            <ListItem>
+                                <PropertyName>IsServiceEnabled</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>LastSearchSuccessDate</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>LastInstallationSuccessDate</PropertyName>
+                            </ListItem>
+                        </ListItems>
+                    </ListEntry>
+                </ListEntries>
+            </ListControl>
+        </View>
     </ViewDefinitions>
 </Configuration>
