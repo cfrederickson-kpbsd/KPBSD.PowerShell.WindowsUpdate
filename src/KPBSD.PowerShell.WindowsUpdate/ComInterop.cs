@@ -3,9 +3,118 @@ using System.Runtime.InteropServices;
 
 namespace KPBSD.PowerShell.WindowsUpdate
 {
-    // Definitions for all COM interfaces I use in this library
+    // Note to self: we only need to expose the bare minimum that is required to write progress updates,
+    // job results, and errors, as well as to fire off the delegate itself.
+    // Realistically, if I just stick with using dynamic (almost) everywhere, I can only write up
+    // the delegate interfaces and parameters.
+
+    #region General
+    public interface IUpdateIdentity
+    {
+        string UpdateID { get; }
+        long RevisionNumber { get; }
+    }
+    public interface IStringCollection
+    {
+        long Add(string value);
+        void Clear();
+        long Count { get; }
+        string this[long index] { get; set; }
+        bool ReadOnly { get; }
+        void Insert(long index, string value);
+        void RemoveAt(long index);
+    }
+    public interface IUpdate
+    {
+        IUpdateCollection BundledUpdates { get; }
+        ICategoryCollection Categories { get; }
+        DateTime Deadline { get; }
+        DeploymentAction DeploymentAction { get; }
+        DownloadPriority DownloadPriority { get; }
+        bool EulaAccepted { get; }
+        IUpdateIdentity Identity { get; }
+        bool IsDownloaded { get; }
+        bool IsHidden { get; }
+        bool IsInstalled { get; }
+        bool IsMandatory { get; }
+        bool IsUninstallable { get; }
+        IStringCollection KBArticleIDs { get; }
+        string Title { get; }
+        UpdateType Type { get; }
+    }
+    public interface ICategory
+    {
+
+    }
+    [ComImport, Guid("07f7438c-7709-4ca5-b518-91279288134e")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IUpdateCollection
+    {
+        long Add(IUpdate update);
+        void Clear();
+        IUpdateCollection Copy();
+        long Count { get; }
+        IUpdate this[long index] { get; set; }
+        bool ReadOnly { get; set; }
+        void Insert(long index, IUpdate value);
+        void RemoveAt(long index);
+    }
+    [ComImport, Guid("918efd1e-b5d8-4c90-8540-aeb9bdc56f9d")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IUpdateSession
+    {
+        IUpdateDownloader CreateUpdateDownloader();
+        IUpdateInstaller CreateUpdateInstaller();
+        IUpdateSearcher CreateUpdateSearcher();
+    }
+    [ComImport, Guid("3a56bfb8-576c-43f7-9335-fe4838fd7e37")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface ICategoryCollection
+    {
+        long Count { get; }
+        ICategory this[long index] { get; }
+    }
+    public interface IUpdateException
+    {
+        UpdateExceptionContext Context { get; }
+        long HResult { get; }
+        string Message { get; }
+    }
+    [ComImport, Guid("503626a3-8e14-4729-9355-0fe664bd2321")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IUpdateExceptionCollection
+    {
+        long Count { get; }
+        IUpdateException this[long index] { get; }
+    }
+    #endregion
+
 
     #region Search
+    [ComImport, Guid("04c6895d-eaf2-4034-97f3-311de9be413a")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IUpdateSearcher
+    {
+        ISearchJob BeginSearch(ISearchCompletedCallback onCompleted, object? state);
+        ISearchResult EndSearch(ISearchJob searchJob);
+        string EscapeString (string inputString);
+        bool IncludePotentiallySupersededUpdates { get; set; }
+        bool Online { get; set; }
+        ServerSelection ServerSelection { get; set; }
+        string ServiceID { get; }
+        long GetTotalHistoryCount();
+        bool CanAutomaticallyUpgradeService { get; set; }
+    }
+    [ComImport, Guid("d40cff62-e08c-4498-941a-01e25f0fd33c")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface ISearchResult
+    {
+        OperationResultCode ResultCode { get; }
+        ICategoryCollection RootCategories { get; }
+        IUpdateCollection Updates { get; }
+        IUpdateExceptionCollection Warnings { get; }
+    }
+
     [ComImport()]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("88AEE058-D4B0-4725-A2F1-814A67AE964C")]
@@ -34,10 +143,16 @@ namespace KPBSD.PowerShell.WindowsUpdate
     #endregion
 
     #region Download
-    // Note to self: we only need to expose the bare minimum that is required to write progress updates,
-    // job results, and errors, as well as to fire off the delegate itself.
-    // Realistically, if I just stick with using dynamic (almost) everywhere, I can only write up
-    // the delegate interfaces and parameters.
+    [ComImport, Guid("68f1c6f9-7ecc-4666-a464-247fe12496c3")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IUpdateDownloader
+    {
+        IDownloadJob BeginDownload(IDownloadProgressChangedCallbackArgs onProgressChanged, IDownloadCompletedCallback onCompleted, object? state);
+        IDownloadResult EndDownload(IDownloadJob downloadJob);
+        bool IsForced { get; set; }
+        DownloadPriority Priority { get; set; }
+        IUpdateCollection Updates { get; set; }
+    }
 
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
@@ -115,7 +230,33 @@ namespace KPBSD.PowerShell.WindowsUpdate
     #endregion
 
     #region Install
-    
+    [ComImport, Guid("ef8208ea-2304-492d-9109-23813b0958e1")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IUpdateInstaller
+    {
+        IInstallationJob BeginInstall(IInstallationProgressChangedCallback onProgressChanged, IInstallationCompletedCallback onCompleted, object? state);
+        IInstallationResult EndInstall(IInstallationJob installationjob);
+        IInstallationJob BeginUninstall(IInstallationProgressChangedCallback onProgressChanged, IInstallationCompletedCallback onCompleted, object? state);
+        IInstallationResult EndUninstall(IInstallationJob uninstallationJob);
+        bool AllowSourcePrompts { get; set; }
+        /// <summary>
+        /// An installation or uninstallation is in progress a computer at the moment. When an installation or
+        /// uninstallation is in progress, the new installation or uninstallation immediately fails with the WU_E_OPERATIONINPROGRESS
+        /// error. The IsBusy property does not secure an opportunity for the caller to begin a new installation or
+        /// uninstallation. if the IsBusy property or a recent installation or uninstallation failure indicates that another installation
+        /// or uninstallation is already in progress, the caller should attempt the installation or uninstallation later.
+        /// </summary>
+        /// <value></value>
+        bool IsBusy { get; }
+        /// <summary>
+        /// Forcibly install or uninstall a update (even if it is already installed or uninstalled).
+        /// Forced installation fails if the update is not already installed.
+        /// </summary>
+        /// <value></value>
+        bool IsForced { get; set; }
+        bool RebootRequiredBeforeInstallation { get; }
+        IUpdateCollection Updates { get; }
+    }
     [ComImport()]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("45F4F6F3-D602-4F98-9A8A-3EFA152AD2D3")]
