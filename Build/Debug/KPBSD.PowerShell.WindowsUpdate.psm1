@@ -10,7 +10,7 @@ param(
 $ProjectDir = Split-Path $PSScriptRoot -Parent | Split-Path -Parent
 $SourceDir = Join-Path $ProjectDir 'src'
 $ScriptFilesToImport = Get-ChildItem -Path $SourceDir -Include '*.ps1' -Recurse
-$CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse
+$CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse | Where-Object { $_.FullName -notmatch 'bin|obj'}
 
 $TempAssemblyPathBase = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate'
 # Remove any previous iterations of the assembly that are no longer in use

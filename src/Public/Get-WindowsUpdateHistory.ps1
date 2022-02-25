@@ -9,7 +9,7 @@ function Get-WindowsUpdateHistory {
         [string[]]
         $Title = @(),
 
-        [Parameter(ParameterSetName = 'IdSet')]
+        [Parameter(ParameterSetName = 'IdSet', ValueFromPipelineByPropertyName, Mandatory)]
         [string[]]
         $UpdateId = @(),
 

@@ -95,7 +95,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        Tags = @('Windows', 'Update', 'Upgrade', 'Windows Update', 'Microsoft Update', 'WSUS')
 
         # A URL to the license for this module.
         LicenseUri = 'https://opensource.org/licenses/MIT'
