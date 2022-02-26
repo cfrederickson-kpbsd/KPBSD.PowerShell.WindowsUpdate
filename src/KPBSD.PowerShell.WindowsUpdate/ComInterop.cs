@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Runtime.InteropServices;
 
 namespace KPBSD.PowerShell.WindowsUpdate
@@ -9,12 +10,16 @@ namespace KPBSD.PowerShell.WindowsUpdate
     // the delegate interfaces and parameters.
 
     #region General
+    [ComImport, Guid("46297823-9940-4C09-AED9-CD3EA6D05968")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdateIdentity
     {
         string UpdateID { get; }
         long RevisionNumber { get; }
     }
-    public interface IStringCollection
+    [ComImport, Guid("EFF90582-2DDC-480F-A06D-60F3FBC362C3")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
+    public interface IStringCollection : IEnumerable
     {
         long Add(string value);
         void Clear();
@@ -24,6 +29,8 @@ namespace KPBSD.PowerShell.WindowsUpdate
         void Insert(long index, string value);
         void RemoveAt(long index);
     }
+    [ComImport, Guid("6A92B07A-D821-4682-B423-5C805022CC4D")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdate
     {
         IUpdateCollection BundledUpdates { get; }
@@ -42,13 +49,15 @@ namespace KPBSD.PowerShell.WindowsUpdate
         string Title { get; }
         UpdateType Type { get; }
     }
+    [ComImport, Guid("81DDC1B8-9D35-47A6-B471-5B80F519223B")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface ICategory
     {
 
     }
     [ComImport, Guid("07f7438c-7709-4ca5-b518-91279288134e")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IUpdateCollection
+    public interface IUpdateCollection : IEnumerable
     {
         long Add(IUpdate update);
         void Clear();
@@ -58,6 +67,11 @@ namespace KPBSD.PowerShell.WindowsUpdate
         bool ReadOnly { get; set; }
         void Insert(long index, IUpdate value);
         void RemoveAt(long index);
+    }
+    [ComImport]
+    [Guid("07f7438c-7709-4ca5-b518-91279288134e")]
+    public class UpdateCollection
+    {
     }
     [ComImport, Guid("918efd1e-b5d8-4c90-8540-aeb9bdc56f9d")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
@@ -69,11 +83,13 @@ namespace KPBSD.PowerShell.WindowsUpdate
     }
     [ComImport, Guid("3a56bfb8-576c-43f7-9335-fe4838fd7e37")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface ICategoryCollection
+    public interface ICategoryCollection : IEnumerable
     {
         long Count { get; }
         ICategory this[long index] { get; }
     }
+    [ComImport, Guid("A37D00F5-7BB0-4953-B414-F9E98326F2E8")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdateException
     {
         UpdateExceptionContext Context { get; }
@@ -82,7 +98,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     }
     [ComImport, Guid("503626a3-8e14-4729-9355-0fe664bd2321")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    public interface IUpdateExceptionCollection
+    public interface IUpdateExceptionCollection : IEnumerable
     {
         long Count { get; }
         IUpdateException this[long index] { get; }
@@ -95,13 +111,13 @@ namespace KPBSD.PowerShell.WindowsUpdate
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdateSearcher
     {
-        ISearchJob BeginSearch(ISearchCompletedCallback onCompleted, object? state);
+        ISearchJob BeginSearch(string criteria, ISearchCompletedCallback onCompleted, object? state);
         ISearchResult EndSearch(ISearchJob searchJob);
         string EscapeString (string inputString);
         bool IncludePotentiallySupersededUpdates { get; set; }
         bool Online { get; set; }
         ServerSelection ServerSelection { get; set; }
-        string ServiceID { get; }
+        string ServiceID { get; set; }
         long GetTotalHistoryCount();
         bool CanAutomaticallyUpgradeService { get; set; }
     }
@@ -122,9 +138,8 @@ namespace KPBSD.PowerShell.WindowsUpdate
     {
         void Invoke(ISearchJob job, ISearchCompletedCallbackArgs callbackArgs);
     }
-    [ComImport()]
+    [ComImport, Guid("7366EA16-7A1A-4EA2-B042-973D3E9CD99B")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
-    [Guid("7366EA16-7A1A-4EA2-B042-973D3E9CD99B")]
     public interface ISearchJob
     {
         bool IsCompleted { get; }
@@ -147,7 +162,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdateDownloader
     {
-        IDownloadJob BeginDownload(IDownloadProgressChangedCallbackArgs onProgressChanged, IDownloadCompletedCallback onCompleted, object? state);
+        IDownloadJob BeginDownload(IDownloadProgressChangedCallback onProgressChanged, IDownloadCompletedCallback onCompleted, object? state);
         IDownloadResult EndDownload(IDownloadJob downloadJob);
         bool IsForced { get; set; }
         DownloadPriority Priority { get; set; }
@@ -184,9 +199,10 @@ namespace KPBSD.PowerShell.WindowsUpdate
     {
         object AsyncState { get; }
         bool IsCompleted { get; }
-        dynamic Updates { get; }
+        IUpdateCollection Updates { get; }
         IDownloadProgress GetProgress();
         void RequestAbort();
+        void CleanUp();
     }
     [ComImport]
     [Guid("324FF2C6-4981-4B04-9412-57481745AB24")]
@@ -197,7 +213,6 @@ namespace KPBSD.PowerShell.WindowsUpdate
     }
     [ComImport]
     [Guid("8C3F1CDD-6173-4591-AEBD-A56A53CA77C1")]
-
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IDownloadProgressChangedCallback
     {
@@ -255,7 +270,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         /// <value></value>
         bool IsForced { get; set; }
         bool RebootRequiredBeforeInstallation { get; }
-        IUpdateCollection Updates { get; }
+        IUpdateCollection Updates { get; set; }
     }
     [ComImport()]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -273,7 +288,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         void RequestAbort();
         object AsyncState { get; }
         bool IsCompleted { get; }
-        dynamic Updates { get; }
+        IUpdateCollection Updates { get; }
     }
     [ComImport()]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]

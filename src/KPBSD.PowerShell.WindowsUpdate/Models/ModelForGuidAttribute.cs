@@ -2,7 +2,7 @@ using System;
 
 namespace KPBSD.PowerShell.WindowsUpdate
 {
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public class ModelForGuidAttribute : Attribute
     {
         public ModelForGuidAttribute(string guid)
