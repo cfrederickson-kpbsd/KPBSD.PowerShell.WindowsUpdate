@@ -458,6 +458,11 @@ namespace KPBSD.PowerShell.WindowsUpdate
         }
         private void WaitForCleanup()
         {
+            if (!this._isStopping)
+            {
+                this._isStopping = true;
+                this._cleanupsCompleted.Signal();
+            }
             while (this._cleanupsCompleted.Wait(1000))
             {
                 try
@@ -787,7 +792,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
             this._queuedUpdates = new ConcurrentBag<IUpdate>();
             this._processedOutputIndex = new HashSet<long>();
             this._statusMessage = "Pending Start";
-            this._cleanupsCompleted = new CountdownEvent(0);
+            this._cleanupsCompleted = new CountdownEvent(1);
             // this._cancellationDelegates = new ConcurrentBag<Action>();
         }
         public override void StopJob()
@@ -880,9 +885,19 @@ namespace KPBSD.PowerShell.WindowsUpdate
             this.AssertNotStarted();
             this._maxCycleCount = repeatCycleCount;
         }
-        public void StartJob()
+        public void StartJob(object updateSession)
         {
             this.AssertNotStarted();
+            
+            if (updateSession is PSObject pso)
+            {
+                this._updateSession = (IUpdateSession)pso.BaseObject;
+            }
+            else
+            {
+                this._updateSession = (IUpdateSession)updateSession;
+            }
+
             this.SetJobState(JobState.Running);
             if (this._isSearchQueued)
             {

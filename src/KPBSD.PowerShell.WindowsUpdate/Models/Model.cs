@@ -21,8 +21,8 @@ namespace KPBSD.PowerShell.WindowsUpdate
                 var guid = Guid.Parse(match.Groups["guid"].Value);
                 var type = Assembly.GetExecutingAssembly().GetExportedTypes().Where(t => 
                 {
-                    var attr = t.GetCustomAttribute<ModelForGuidAttribute>();
-                    return attr != null && attr.Guid == guid;
+                    var attr = t.GetCustomAttributes<ModelForGuidAttribute>();
+                    return attr.Any(a => a.Guid == guid);
                 }).SingleOrDefault();
                 if (type == null)
                 {
