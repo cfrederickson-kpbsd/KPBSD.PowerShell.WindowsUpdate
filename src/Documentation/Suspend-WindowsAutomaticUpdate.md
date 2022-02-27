@@ -45,3 +45,5 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+[Start-WindowsAutomaticUpdate](./Start-WindowsAutomaticUpdate.md)
+[Resume-WindowsAutomaticUpdate](./Resume-WindowsAutomaticUpdate.md)

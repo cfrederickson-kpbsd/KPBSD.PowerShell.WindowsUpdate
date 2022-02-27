@@ -186,3 +186,6 @@ A representation of a Windows Update.
 ## NOTES
 
 ## RELATED LINKS
+[Request-WindowsUpdate](./Request-WindowsUpdate.md)
+[Install-WindowsUpdate](./Install-WindowsUpdate.md)
+[Get-WindowsUpdateHistory](./Get-WindowsUpdateHistory.md)

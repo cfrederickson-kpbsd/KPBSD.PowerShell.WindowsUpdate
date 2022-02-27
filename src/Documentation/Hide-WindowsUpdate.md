@@ -169,3 +169,5 @@ A representation of a Windows Update.
 ## NOTES
 
 ## RELATED LINKS
+[Show-WindowsUpdate](./Show-WindowsUpdate.md)
+[Get-WindowsUpdate](./Get-WindowsUpdate.md)

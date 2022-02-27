@@ -46,3 +46,5 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+[Suspend-WindowsAutomaticUpdate](./Suspend-WindowsAutomaticUpdate.md)
+[Start-WindowsAutomaticUpdate](./Start-WindowsAutomaticUpdate.md)
