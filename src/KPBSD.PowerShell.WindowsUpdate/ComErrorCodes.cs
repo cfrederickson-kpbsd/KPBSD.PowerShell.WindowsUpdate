@@ -1846,7 +1846,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
                     {
                         errorId = "ComException";
                         category = ErrorCategory.NotSpecified;
-                        message = $"COM exception {errorCode:X8} was thrown.";
+                        message = $"COM exception 0x{errorCode:X8} was thrown.";
                         return false;
                     }
             }

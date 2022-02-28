@@ -14,11 +14,13 @@ $CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpd
 
 # Load the module entirely in-memory so that we don't have to leave the file during our session
 $TempAssemblyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate.dll'
+if (Test-Path $TempAssemblyPath) { Remove-Item $TempAssemblyPath -Force -ErrorAction Stop }
 Add-Type -Path $CSharpFilesToLoad -IgnoreWarnings -OutputAssembly $TempAssemblyPath
 $AssemblyData = [System.IO.File]::ReadAllBytes($TempAssemblyPath)
 $Assembly = [System.Reflection.Assembly]::Load($AssemblyData)
 Remove-Item -Path $TempAssemblyPath
 Import-Module -Assembly $Assembly
+# Import-Module $TempAssemblyPath
 
 foreach ($file in $ScriptFilesToImport) {
     . $file.FullName
