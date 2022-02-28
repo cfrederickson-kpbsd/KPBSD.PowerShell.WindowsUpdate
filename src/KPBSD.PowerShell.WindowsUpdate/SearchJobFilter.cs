@@ -1,12 +1,64 @@
 namespace KPBSD.PowerShell.WindowsUpdate
 {
+    using System;
     using System.Collections.ObjectModel;
 
     /// <summary>
-    /// Filter terms for the <see cref="WindowsUPdateJob2"/> when the job will perform a search for updates.
+    /// Filter terms for the <see cref="WindowsUpdateJob"/> when the job will perform a search for updates.
     /// </summary>
     public class SearchJobFilter
     {
+        public SearchJobFilter(
+            bool includePotentiallySupersededUpdates,
+            bool searchOffline,
+            ServerSelection serverSelection,
+            string? serviceId,
+            string[]? title,
+            string[]? updateId,
+            string[]? categoryName,
+            string[]? categoryId,
+            bool includeHidden,
+            bool includeInstalled,
+            UpdateType? type,
+            bool IsSearchForUninstallations,
+            bool? assignedForAutomaticUpdates,
+            bool? browseOnly,
+            bool? autoSelectOnWebSites,
+            bool? isPresent,
+            bool? rebootRequired
+        )
+        {
+            this.IncludePotentiallySupersededUpdates = includePotentiallySupersededUpdates;
+            this.SearchOffline = searchOffline;
+            this.ServerSelection = serverSelection;
+            this.ServiceId = serviceId;
+            if (title != null)
+            {
+                this.Title = new ReadOnlyCollection<string>((string[])title.Clone());
+            }
+            if (updateId != null)
+            {
+                this.UpdateId = new ReadOnlyCollection<string>((string[])updateId.Clone());
+            }
+            if (categoryName != null)
+            {
+                this.CategoryName = new ReadOnlyCollection<string>((string[])categoryName.Clone());
+            }
+            if (categoryId != null)
+            {
+                this.CategoryId =  new ReadOnlyCollection<string>((string[])categoryId.Clone());
+            }
+            this.IncludeHidden = includeHidden;
+            this.IncludeInstalled = includeInstalled;
+            this.Type = type;
+            this.IsSearchForUninstallations = IsSearchForUninstallations;
+            this.AssignedForAutomaticUpdates = assignedForAutomaticUpdates;
+            this.BrowseOnly = browseOnly;
+            this.AutoSelectOnWebSites = autoSelectOnWebSites;
+            this.IsPresent = isPresent;
+            this.RebootRequired = rebootRequired;
+        }
+
         public bool IncludePotentiallySupersededUpdates { get; }
         public bool SearchOffline { get; }
         public ServerSelection ServerSelection { get; }

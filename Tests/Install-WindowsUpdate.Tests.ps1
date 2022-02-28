@@ -4,14 +4,6 @@ Describe 'Install-WindowsUpdate' {
     InModuleScope 'KPBSD.PowerShell.WindowsUpdate' {
         BeforeAll {
             Mock 'Get-WindowsUpdate' {
-                [CmdletBinding()]
-                param(
-                    [string[]]
-                    $Title,
-
-                    [Guid[]]
-                    $UpdateId
-                )
                 @(
                     [pscustomobject]@{
                         Title = 'Not-Installed Windows Update'
@@ -69,8 +61,8 @@ Describe 'Install-WindowsUpdate' {
         Context 'mock to PassThru identified updates' {
             BeforeAll {
                 Mock 'Test-RunAsAdmin' { $true }
-                Mock 'Start-WindowsUpdateInstallJob' -RemoveParameterType 'WindowsUpdate' -MockWith {
-                    param($WindowsUpdate, $JobName, $Command)
+                Mock 'Start-WindowsUpdateJob' -RemoveParameterType 'WindowsUpdate' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith {
+                    # param($WindowsUpdate, $JobName, $Command)
                     process { Start-Job { $using:WindowsUpdate } -Name $JobName }
                 }
             }
@@ -84,7 +76,7 @@ Describe 'Install-WindowsUpdate' {
                 Install-WindowsUpdate -UpdateId 'c49d7d2f-d236-4bd5-90e6-dafeeb6fae30' -ErrorAction Ignore -PassThru | Should -HaveCount 0
             }
         }
-        
+
         It 'fails if not running as admin' {
             Mock 'Test-RunAsAdmin' { $false }
             {
@@ -93,14 +85,14 @@ Describe 'Install-WindowsUpdate' {
         }
         It 'fails if the update is not downloaded' {
             Mock 'Test-RunAsAdmin' { $true }
-            Mock 'Start-WindowsUpdateInstallJob' { param($WindowsUpdate, $JobName, $Command) }
+            Mock 'Start-WindowsUpdateJob' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' { }
             {
                 Install-WindowsUpdate -UpdateId '20c683a1-0c1a-4a1a-984a-2cfba9272188' -ErrorAction Stop
             } | Should -Throw -ExceptionType System.InvalidOperationException -ErrorId 'NotDownloaded,Install-WindowsUpdate'
         }
         It 'fails if the update is already installed' {
             Mock 'Test-RunAsAdmin' { $true }
-            Mock 'Start-WindowsUpdateInstallJob' { param($WindowsUpdate, $JobName, $Command) }
+            Mock 'Start-WindowsUpdateJob' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' { }
             {
                 Install-WindowsUpdate -UpdateId 'c49d7d2f-d236-4bd5-90e6-dafeeb6fae30' -ErrorAction Stop
             } | Should -Throw -ExceptionType System.InvalidOperationException -ErrorId 'AlreadyInstalled,Install-WindowsUpdate'

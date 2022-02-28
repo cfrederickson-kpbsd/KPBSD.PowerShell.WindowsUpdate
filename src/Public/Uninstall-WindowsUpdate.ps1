@@ -3,9 +3,9 @@ function Uninstall-WindowsUpdate {
     [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel], ParameterSetName = 'TitlePassThru')]
     [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel], ParameterSetName = 'IdPassThru')]
     [OutputType([KPBSD.PowerShell.WindowsUpdate.UpdateModel], ParameterSetName = 'UpdatePassThru')]
-    [OutputType([KPBSD.PowerShell.WindowsUpdate.WUInstallJob], ParameterSetName = 'TitleAsJob')]
-    [OutputType([KPBSD.PowerShell.WindowsUpdate.WUInstallJob], ParameterSetName = 'IdAsJob')]
-    [OutputType([KPBSD.PowerShell.WindowsUpdate.WUInstallJob], ParameterSetName = 'UpdateAsJob')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.WindowsUpdateJob], ParameterSetName = 'TitleAsJob')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.WindowsUpdateJob], ParameterSetName = 'IdAsJob')]
+    [OutputType([KPBSD.PowerShell.WindowsUpdate.WindowsUpdateJob], ParameterSetName = 'UpdateAsJob')]
     [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'TitlePassThru')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName, ParameterSetName = 'TitlePassThru')]
@@ -100,7 +100,14 @@ function Uninstall-WindowsUpdate {
 
         Write-Debug "$(Get-Date -Format 'HH:mm:ss.ffff') [Uninstall-WindowsUpdate] <Process> Proceeding with $($AcceptedUpdates.Count) accepted Windows Updates to uninstall."
         if ($ProcessPipelineAsIndividualJobs -and $AcceptedUpdates.Count -gt 0) {
-            $Job = Start-WindowsUpdateUninstallJob -WindowsUpdate $AcceptedUpdates -JobName $PSBoundParameters['JobName'] -Command $MyInvocation.Line
+            $StartWindowsUpdateJobParameters = @{
+                'WindowsUpdate' = $AcceptedUpdates
+                'JobName' = $PSBoundParameters['JobName']
+                'Command' = $MyInvocation.Line
+                'WindowsUpdateSession' = Get-WindowsUpdateSession
+                'Uninstall' = $true
+            }
+            $Job = Start-WindowsUpdateJob @StartWindowsUpdateJobParameters
             if ($AsJob) {
                 $Job
             }
@@ -112,7 +119,14 @@ function Uninstall-WindowsUpdate {
     end {
         Write-Debug "$(Get-Date -Format 'HH:mm:ss.ffff') [Uninstall-WindowsUpdate] <End> Proceeding with $($AcceptedUpdates.Count) accepted Windows Updates to uninstall."
         if (!$ProcessPipelineAsIndividualJobs -and $AcceptedUpdates.Count -gt 0) {
-            $Job = Start-WindowsUpdateUninstallJob -WindowsUpdate $AcceptedUpdates -JobName $PSBoundParameters['JobName'] -Command $MyInvocation.Line
+            $StartWindowsUpdateJobParameters = @{
+                'WindowsUpdate' = $AcceptedUpdates
+                'JobName' = $PSBoundParameters['JobName']
+                'Command' = $MyInvocation.Line
+                'WindowsUpdateSession' = Get-WindowsUpdateSession
+                'Uninstall' = $true
+            }
+            $Job = Start-WindowsUpdateJob @StartWindowsUpdateJobParameters
             if ($AsJob) {
                 $Job
             }

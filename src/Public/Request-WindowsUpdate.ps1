@@ -47,16 +47,20 @@ function Request-WindowsUpdate {
     }
     process {
         if ($PSCmdlet.ParameterSetName -in @('TitleSet', 'TitlePassThruSet')) {
-            $WindowsUpdate = Get-WindowsUpdate -Title $Title
+            $UpdatesToProcess = Get-WindowsUpdate -Title $Title
         }
-        if ($PSCmdlet.ParameterSetName -in @('IdSet', 'IdPassThruSet')) {
-            $WindowsUpdate = Get-WindowsUpdate -UpdateId $UpdateId
+        elseif ($PSCmdlet.ParameterSetName -in @('IdSet', 'IdPassThruSet')) {
+            $UpdatesToProcess = Get-WindowsUpdate -UpdateId $UpdateId
+        }
+        else
+        {
+            $UpdatesToProcess = $WindowsUpdate
         }
         if ($ProcessPipelineAsIndividualJobs -or $null -eq $UpdatesToDownload) {
             $UpdatesToDownload = [System.Collections.Generic.List[KPBSD.PowerShell.WindowsUpdate.UpdateModel]]::new()
         }
 
-        foreach ($Update in $WindowsUpdate) {
+        foreach ($Update in $UpdatesToProcess) {
             if ($Update.IsDownloaded) {
                 $ex = [System.InvalidOperationException]::new('The Windows Update is already downloaded onto the computer.')
                 $er = [System.Management.Automation.ErrorRecord]::new(
@@ -78,7 +82,14 @@ function Request-WindowsUpdate {
         }
 
         if ($ProcessPipelineAsIndividualJobs -and $UpdatesToDownload.Count -gt 0) {
-            $Job = Start-WindowsUpdateDownloadJob -WindowsUpdates $UpdatesToDownload -JobName $PSBoundParameters['JobName'] -Command $MyInvocation.Line
+            $StartWindowsUpdateJobParameters = @{
+                'WindowsUpdate' = $UpdateToDownload
+                'Download' = $true
+                'WindowsUpdateSession' = Get-WindowsUpdateSession
+                'JobName' = $PSBoundParameters['JobName']
+                'Command' = $MyInvocation.Line
+            }
+            $Job = Start-WindowsUpdateJob @StartWindowsUpdateJobParameters
             if ($AsJob) {
                 $Job
             }
@@ -90,7 +101,14 @@ function Request-WindowsUpdate {
     }
     end {
         if (!$ProcessPipelineAsIndividualJobs -and $UpdatesToDownload.Count -gt 0) {
-            $Job = Start-WindowsUpdateDownloadJob -WindowsUpdates $UpdatesToDownload -JobName $PSBoundParameters['JobName'] -Command $MyInvocation.Line
+            $StartWindowsUpdateJobParameters = @{
+                'WindowsUpdate' = $UpdateToDownload
+                'Download' = $true
+                'WindowsUpdateSession' = Get-WindowsUpdateSession
+                'JobName' = $PSBoundParameters['JobName']
+                'Command' = $MyInvocation.Line
+            }
+            $Job = Start-WindowsUpdateJob @StartWindowsUpdateJobParameters
             if ($AsJob) {
                 $Job
             }

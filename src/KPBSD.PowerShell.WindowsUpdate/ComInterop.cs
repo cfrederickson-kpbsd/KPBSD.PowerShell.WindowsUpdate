@@ -88,7 +88,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
         long Count { get; }
         ICategory this[long index] { get; }
     }
-    [ComImport, Guid("A37D00F5-7BB0-4953-B414-F9E98326F2E8")]
+    [ComImport, Guid("a376dd5e-09d4-427f-af7c-fed5b6e1c1d6")]
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdateException
     {
@@ -162,7 +162,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdateDownloader
     {
-        IDownloadJob BeginDownload(IDownloadProgressChangedCallback onProgressChanged, IDownloadCompletedCallback onCompleted, object? state);
+        IDownloadJob BeginDownload(IDownloadProgressChangedCallback? onProgressChanged, IDownloadCompletedCallback onCompleted, object? state);
         IDownloadResult EndDownload(IDownloadJob downloadJob);
         bool IsForced { get; set; }
         DownloadPriority Priority { get; set; }
@@ -249,9 +249,9 @@ namespace KPBSD.PowerShell.WindowsUpdate
     [InterfaceType(ComInterfaceType.InterfaceIsIDispatch)]
     public interface IUpdateInstaller
     {
-        IInstallationJob BeginInstall(IInstallationProgressChangedCallback onProgressChanged, IInstallationCompletedCallback onCompleted, object? state);
+        IInstallationJob BeginInstall(IInstallationProgressChangedCallback? onProgressChanged, IInstallationCompletedCallback onCompleted, object? state);
         IInstallationResult EndInstall(IInstallationJob installationjob);
-        IInstallationJob BeginUninstall(IInstallationProgressChangedCallback onProgressChanged, IInstallationCompletedCallback onCompleted, object? state);
+        IInstallationJob BeginUninstall(IInstallationProgressChangedCallback? onProgressChanged, IInstallationCompletedCallback onCompleted, object? state);
         IInstallationResult EndUninstall(IInstallationJob uninstallationJob);
         bool AllowSourcePrompts { get; set; }
         /// <summary>

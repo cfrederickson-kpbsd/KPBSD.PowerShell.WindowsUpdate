@@ -12,17 +12,13 @@ $SourceDir = Join-Path $ProjectDir 'src'
 $ScriptFilesToImport = Get-ChildItem -Path $SourceDir -Include '*.ps1' -Recurse
 $CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse | Where-Object { $_.FullName -notmatch 'bin|obj'}
 
-$TempAssemblyPathBase = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate'
-# Remove any previous iterations of the assembly that are no longer in use
-Remove-Item -Path "$TempAssemblyPathBase*.dll" -ErrorAction Ignore
-$TempAssemblyPath = "$TempAssemblyPathBase.dll"
-[int]$TempAssemblyPathId = 0
-while (Test-Path $TempAssemblyPath) {
-    $TempAssemblyPathId++
-    $TempAssemblyPath = "$TempAssemblyPathBase$TempAssemblyPathId.dll"
-}
+# Load the module entirely in-memory so that we don't have to leave the file during our session
+$TempAssemblyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate.dll'
 Add-Type -Path $CSharpFilesToLoad -IgnoreWarnings -OutputAssembly $TempAssemblyPath
-Import-Module $TempAssemblyPath
+$AssemblyData = [System.IO.File]::ReadAllBytes($TempAssemblyPath)
+$Assembly = [System.Reflection.Assembly]::Load($AssemblyData)
+Remove-Item -Path $TempAssemblyPath
+Import-Module -Assembly $Assembly
 
 foreach ($file in $ScriptFilesToImport) {
     . $file.FullName
