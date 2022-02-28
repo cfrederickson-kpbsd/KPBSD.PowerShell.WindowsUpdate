@@ -74,8 +74,8 @@ Describe 'Uninstall-WindowsUpdate' {
     Context 'mock to PassThru identified updates' {
         BeforeAll {
             Mock 'Test-RunAsAdmin' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith { $true }
-            Mock 'Start-WindowsUpdateUninstallJob' -RemoveParameterType 'WindowsUpdate' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith {
-                param($WindowsUpdate, $JobName, $Command)
+            Mock 'Start-WindowsUpdateJob' -RemoveParameterType 'WindowsUpdate' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith {
+                # param($WindowsUpdate, $JobName, $Command)
                 process { Start-Job { $using:WindowsUpdate } -Name $JobName }
             }
         }
@@ -98,14 +98,14 @@ Describe 'Uninstall-WindowsUpdate' {
     }
     It 'fails if the update is not installed' {
         Mock 'Test-RunAsAdmin' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith { $true }
-        Mock 'Start-WindowsUpdateUninstallJob' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith { }
+        Mock 'Start-WindowsUpdateJob' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith { }
         {
             Uninstall-WindowsUpdate -UpdateId '20c683a1-0c1a-4a1a-984a-2cfba9272188' -ErrorAction Stop
         } | Should -Throw -ExceptionType System.InvalidOperationException -ErrorId 'NotInstalled,Uninstall-WindowsUpdate'
     }
     It 'fails if the update does not support uninstallation' {
         Mock 'Test-RunAsAdmin' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith { $true }
-        Mock 'Start-WindowsUpdateUninstallJob' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith { }
+        Mock 'Start-WindowsUpdateJob' -ModuleName 'KPBSD.PowerShell.WindowsUpdate' -MockWith { }
         {
             Uninstall-WindowsUpdate -UpdateId 'c49d7d2f-d236-4bd5-90e6-dafeeb6fae30' -ErrorAction Stop
         } | Should -Throw -ExceptionType System.NotSupportedException -ErrorId 'UninstallationNotSupported,Uninstall-WindowsUpdate'

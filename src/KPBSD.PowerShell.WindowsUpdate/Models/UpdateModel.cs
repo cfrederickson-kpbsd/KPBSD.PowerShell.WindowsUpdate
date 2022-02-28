@@ -7,7 +7,11 @@ namespace KPBSD.PowerShell.WindowsUpdate
     /// <summary>
     /// Mapped from c1c2f21a-d2f4-4902-b5c6-8a081c19a890.
     /// </summary>
-    [ModelForGuid("c1c2f21a-d2f4-4902-b5c6-8a081c19a890")]
+	[ModelForGuid("6A92B07A-D821-4682-B423-5C805022CC4D")] // IUpdate
+	[ModelForGuid("144fe9b0-d23d-4a8b-8634-fb4457533b7a")] // IUpdate2
+	// [ModelForGuid("")] // IUpdate3 - not defined - https://docs.microsoft.com/en-us/previous-versions/windows/desktop/aa826506(v=vs.85)
+	[ModelForGuid("27E94B0D-5139-49A2-9A61-93522DC54652")] // IUpdate4
+    [ModelForGuid("c1c2f21a-d2f4-4902-b5c6-8a081c19a890")] // IUpdate5
     public class UpdateModel : Model, IEquatable<UpdateModel>
     {
         private readonly dynamic _comObject;

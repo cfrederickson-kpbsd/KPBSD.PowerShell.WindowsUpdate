@@ -28,7 +28,7 @@ function Hide-WindowsUpdate {
             [object[]]$Updates = Get-WindowsUpdate -Title $Title -IncludeHidden -IncludeInstalled
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'IdSet') {
-            [object[]]$Updates = Get-WindowsUpdate -Title $Title -IncludeHidden -IncludeInstalled
+            [object[]]$Updates = Get-WindowsUpdate -UpdateId $UpdateId -IncludeHidden -IncludeInstalled
         }
         else {
             [object[]]$Updates = $WindowsUpdate

@@ -209,3 +209,5 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+[Get-WindowsUpdate](./Get-WindowsUpdate.md)
+[Install-WindowsUpdate](./Install-WindowsUpdate.md)

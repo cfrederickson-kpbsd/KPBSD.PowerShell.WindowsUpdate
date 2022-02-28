@@ -153,6 +153,6 @@ A representation of an update operation that occurred on the computer.
 ## NOTES
 
 ## RELATED LINKS
-Get-WindowsUpdate
-Install-WindowsUpdate
-Uninstall-WindowsUpdate
+[Get-WindowsUpdate](./Get-WindowsUpdate.md)
+[Install-WindowsUpdate](./Install-WindowsUpdate.md)
+[Uninstall-WindowsUpdate](./Uninstall-WindowsUpdate.md)

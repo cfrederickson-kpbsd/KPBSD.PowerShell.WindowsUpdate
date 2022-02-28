@@ -16,6 +16,14 @@ function Get-WindowsUpdate {
         [string[]]
         $UpdateId,
 
+        [Parameter()]
+        [string[]]
+        $CategoryName,
+
+        [Parameter()]
+        [string[]]
+        $CategoryId,
+
         # Include hidden updates.
         [Parameter()]
         [switch]
@@ -25,6 +33,38 @@ function Get-WindowsUpdate {
         [switch]
         $IncludeInstalled,
 
+        [Parameter()]
+        [Nullable[KPBSD.PowerShell.WindowsUpdate.UpdateType]]
+        $UpdateType,
+
+        [Parameter()]
+        [switch]
+        $IsSearchForUninstallations,
+
+        [Parameter()]
+        [Nullable[bool]]
+        $IsAssignedForAutomaticUpdates,
+
+        [Parameter()]
+        [Nullable[bool]]
+        $BrowseOnly,
+
+        [Parameter()]
+        [Nullable[bool]]
+        $AutoSelectOnWebSites,
+
+        [Parameter()]
+        [Nullable[bool]]
+        $IsPresent,
+
+        [Parameter()]
+        [Nullable[bool]]
+        $RebootRequired,
+
+        [Parameter()]
+        [switch]
+        $IncludePotentiallySupersededUpdates,
+
         # Do not go online to search for updates.
         [Parameter()]
         [switch]
@@ -32,10 +72,9 @@ function Get-WindowsUpdate {
 
         # Set the server that is searched for updates.
         [Parameter()]
-        [KPBSD.PowerShell.WindowsUpdate.ServerSelectionArgumentValidation()]
-        [KPBSD.PowerShell.WindowsUpdate.ServerSelectionArgumentCompleter()]
+        [ValidateNotNullOrEmpty()]
         [string]
-        $Server,
+        $Server = 'Default',
 
         # Return the Get-WindowsUpdate operation as a job.
         [Parameter()]
@@ -50,67 +89,85 @@ function Get-WindowsUpdate {
     begin {
         $SynchronousJobs = [System.Collections.Generic.List[System.Management.Automation.Job]]::new()
         $WhatIfPreference = $false
-        $ConfirmPreference= $false
+        $ConfirmPreference = $false
 
         $TitlesNotMatched = [System.Collections.Generic.HashSet[string]]::new($Title.Count, [System.StringComparer]::OrdinalIgnoreCase)
         $UpdateIdsNotMatched = [System.Collections.Generic.HashSet[string]]::new($UpdateId.Count, [System.StringComparer]::OrdinalIgnoreCase)
     }
     process {
-        try {
-            $JobName = $PSBoundParameters['JobName']
-            $Job = [KPBSD.PowerShell.WindowsUpdate.WUSearchJob]::new($PSCmdlet.MyInvocation.Line, $JobName)
-            [WildcardPattern[]]$TitleWildcards = $Title | ForEach-Object { if ($_) { [WildcardPattern]::Get($_, 'IgnoreCase') } }
-            $ClientFilterParameters = [KPBSD.PowerShell.WindowsUpdate.WindowsUpdateSearchParameters]::new($TitleWildcards, $UpdateId, $IncludeHidden, $IncludeInstalled)
-            $ServerCriteria = $ClientFilterParameters.GetServerFilter()
-            $Job.ClientFilterParameters = $ClientFilterParameters
-            $Job.Criteria = $ServerCriteria
-            $Job.Online = -not $SearchOffline
-            if ($Server -as [KPBSD.PowerShell.WindowsUpdate.ServerSelection]) {
-                $Job.ServerSelection = $Server
-            }
-            elseif ($Server) {
-                $Job.ServerSelection = 'Others'
-                $Job.ServiceId = $Server
-            }
-
-            $Searcher = New-WindowsUpdateSearcher
-            $Job | Start-WindowsUpdateJob $Searcher | Where-Object { $AsJob }
-            if (!$AsJob) {
-                Write-Debug "$(Get-Date -Format 'HH:mm:ss.ffff') [Get-WindowsUpdate] Adding job $Job to synchronous search queue."
-                $SynchronousJobs.Add($Job)
-            }
-
-            foreach ($T in $Title) {
-                if (-not [WildcardPattern]::ContainsWildcardCharacters($T)) {
-                    [void]$TitlesNotMatched.Add($T)
-                }
-            }
-            foreach ($U in $UpdateId) {
-                [void]$UpdateIdsNotMatched.Add($U)
+        $ServiceId = $Server -as [Guid]
+        if ($ServiceId)
+        {
+            $ServerSelection = 'Others'
+        }
+        else
+        {
+            # Use automation null to avoid casting null string to empty string
+            $ServiceId = [System.Management.Automation.Internal.AutomationNull]::Value
+            $ServerSelection = $Server -as [KPBSD.PowerShell.WindowsUpdate.ServerSelection]
+            if (!$ServerSelection) {
+                $ServerSelection = 'Default'
             }
         }
-        finally {
-            if ($PSCmdlet.Stopping) {
-                $SynchronousJobs | Where-Object 'JobState' -eq 'Running' | Stop-Job -ErrorAction Ignore
-                $SynchronousJobs | Remove-Job -Force -ErrorAction Ignore
+        $SearchJobFilter = [KPBSD.PowerShell.WindowsUpdate.SearchJobFilter]::new(
+            <# bool includePotentiallySupersededUpdates, #> $IncludePotentiallySupersededUpdates,
+            <# bool searchOffline, #> $SearchOffline,
+            <# ServerSelection serverSelection, #> $ServerSelection,
+            <# string? serviceId, #> $ServiceId,
+            <# string[]? title, #> $Title,
+            <# string[]? updateId, #> $UpdateId,
+            <# string[]? categoryName, #> $CategoryName,
+            <# string[]? categoryId, #> $CategoryId,
+            <# bool includeHidden, #> $IncludeHidden,
+            <# bool includeInstalled, #> $IncludeInstalled,
+            <# UpdateType? type, #> $UpdateType,
+            <# bool IsSearchForUninstallations, #> $IsSearchForUninstallations,
+            <# bool? assignedForAutomaticUpdates, #> $IsAssignedForAutomaticUpdates,
+            <# bool? browseOnly, #> $BrowseOnly,
+            <# bool? autoSelectOnWebSites, #> $AutoSelectOnWebSites,
+            <# bool? isPresent, #> $IsPresent,
+            <# bool? rebootRequired #> $RebootRequired
+        )
+        $StartWindowsUpdateJobParameters = @{
+            'Filter' = $SearchJobFilter
+            'JobName' = $PSBoundParameters['JobName']
+            'Command' = $MyInvocation.Line
+            'WindowsUpdateSession' = Get-WindowsUpdateSession
+        }
+        $Job = Start-WindowsUpdateJob @StartWindowsUpdateJobParameters
+        if ($AsJob) {
+            $Job
+        }
+        else {
+            Write-Debug "$(Get-Date -Format 'HH:mm:ss.ffff') [Get-WindowsUpdate] Adding job $Job to synchronous search queue."
+            $SynchronousJobs.Add($Job)
+        }
+        foreach ($T in $Title) {
+            if (-not [WildcardPattern]::ContainsWildcardCharacters($T)) {
+                [void]$TitlesNotMatched.Add($T)
             }
+        }
+        foreach ($U in $UpdateId) {
+            [void]$UpdateIdsNotMatched.Add($U)
         }
     }
     end {
-        $SynchronousJobs | Invoke-SynchronousJob -OutVariable Updates
-        foreach ($update in $Updates) {
-            [void]$TitlesNotMatched.Remove($update.Title)
-            [void]$UpdateIdsNotMatched.Remove($update.UpdateId)
-        }
-        foreach ($TitleNotMatched in $TitlesNotMatched) {
-            $PSCmdlet.WriteError(
-                (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'Title' -Identifier $TitleNotMatched)
-            )
-        }
-        foreach ($UpdateIdNotMatched in $UpdateIdsNotMatched) {
-            $PSCmdlet.WriteError(
-                (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'UpdateId' -Identifier $UpdateIdNotMatched)
-            )
+        if (!$AsJob) {
+            $SynchronousJobs | Invoke-SynchronousJob -OutVariable Updates
+            foreach ($update in $Updates) {
+                [void]$TitlesNotMatched.Remove($update.Title)
+                [void]$UpdateIdsNotMatched.Remove($update.UpdateId)
+            }
+            foreach ($TitleNotMatched in $TitlesNotMatched) {
+                $PSCmdlet.WriteError(
+                    (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'Title' -Identifier $TitleNotMatched)
+                )
+            }
+            foreach ($UpdateIdNotMatched in $UpdateIdsNotMatched) {
+                $PSCmdlet.WriteError(
+                    (New-ItemNotFoundError -ResourceType 'WindowsUpdate' -IdentifierName 'UpdateId' -Identifier $UpdateIdNotMatched)
+                )
+            }
         }
     }
 }

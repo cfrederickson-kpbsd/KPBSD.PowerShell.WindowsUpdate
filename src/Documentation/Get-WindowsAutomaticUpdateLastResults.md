@@ -53,5 +53,5 @@ and the last time it successfully ran.
 ## NOTES
 
 ## RELATED LINKS
-Start-WindowsAutomaticUpdate
-https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb513699(v=vs.85)
+[Start-WindowsAutomaticUpdate](./Start-WindowsAutomaticUpdate.md)
+[https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb513699(v=vs.85)](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb513699(v=vs.85))

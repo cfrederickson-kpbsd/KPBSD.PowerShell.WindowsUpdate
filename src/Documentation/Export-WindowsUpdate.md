@@ -159,6 +159,6 @@ pipeline.
 ## NOTES
 
 ## RELATED LINKS
-https://docs.microsoft.com/en-us/previous-versions/windows/desktop/aa386101(v=vs.85)
-Import-WindowsUpdate
-Get-WindowsUpdate
+[https://docs.microsoft.com/en-us/previous-versions/windows/desktop/aa386101(v=vs.85)](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/aa386101(v=vs.85))
+[Import-WindowsUpdate](./Import-WindowsUpdate.md)
+[Get-WindowsUpdate](./Get-WindowsUpdate.md)
