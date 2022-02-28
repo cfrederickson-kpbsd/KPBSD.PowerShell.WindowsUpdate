@@ -34,7 +34,7 @@ namespace KPBSD.PowerShell.WindowsUpdate
 		public bool DeltaCompressedContentPreferred { get { return _comObject.DeltaCompressedContentPreferred; } }
 		public DeploymentAction DeploymentAction { get { return (DeploymentAction)(int)_comObject.DeploymentAction; } }
 		public string Description { get { return _comObject.Description; } }
-		public UpdateDownloadContentModel[] DownloadContents { get { return ToModelArray(_comObject.DownloadContents); } }
+		public UpdateDownloadContentModel[] DownloadContents { get { return ToModelArray<UpdateDownloadContentModel>(_comObject.DownloadContents); } }
 		public DownloadPriority DownloadPriority { get { return (DownloadPriority)(int)_comObject.DownloadPriority; } }
 		public bool EulaAccepted { get { return _comObject.EulaAccepted; } }
 		public string EulaText { get { return _comObject.EulaText; } }

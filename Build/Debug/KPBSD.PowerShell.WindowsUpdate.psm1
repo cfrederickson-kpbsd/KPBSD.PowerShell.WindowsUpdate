@@ -10,17 +10,16 @@ param(
 $ProjectDir = Split-Path $PSScriptRoot -Parent | Split-Path -Parent
 $SourceDir = Join-Path $ProjectDir 'src'
 $ScriptFilesToImport = Get-ChildItem -Path $SourceDir -Include '*.ps1' -Recurse
-$CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse | Where-Object { $_.FullName -notmatch 'bin|obj'}
+$CSharpFilesToLoad = Get-ChildItem -Path "$SourceDir/KPBSD.PowerShell.WindowsUpdate" -Include '*.cs' -Recurse | Where-Object FullName -notmatch 'bin|obj'
 
 # Load the module entirely in-memory so that we don't have to leave the file during our session
-$TempAssemblyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'KPBSD.PowerShell.WindowsUpdate.dll'
+$TempAssemblyPath = Join-Path $env:Temp 'KPBSD.PowerShell.WindowsUpdate.dll'
 if (Test-Path $TempAssemblyPath) { Remove-Item $TempAssemblyPath -Force -ErrorAction Stop }
 Add-Type -Path $CSharpFilesToLoad -IgnoreWarnings -OutputAssembly $TempAssemblyPath
 $AssemblyData = [System.IO.File]::ReadAllBytes($TempAssemblyPath)
 $Assembly = [System.Reflection.Assembly]::Load($AssemblyData)
 Remove-Item -Path $TempAssemblyPath
 Import-Module -Assembly $Assembly
-# Import-Module $TempAssemblyPath
 
 foreach ($file in $ScriptFilesToImport) {
     . $file.FullName

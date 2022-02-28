@@ -10,6 +10,10 @@
         <Name>KPBSD.PowerShell.WindowsUpdate.UpdateModel</Name>
         <Members>
             <AliasProperty>
+                <Name>Name</Name>
+                <ReferencedMemberName>Title</ReferencedMemberName>
+            </AliasProperty>
+            <AliasProperty>
                 <Name>RequiresManualInstallation</Name>
                 <ReferencedMemberName>BrowseOnly</ReferencedMemberName>
             </AliasProperty>
@@ -37,6 +41,10 @@
     <Type>
         <Name>KPBSD.PowerShell.WindowsUpdate.UpdateHistoryModel</Name>
         <Members>
+            <AliasProperty>
+                <Name>Name</Name>
+                <ReferencedMemberName>Title</ReferencedMemberName>
+            </AliasProperty>
             <ScriptProperty>
                 <Name>UpdateId</Name>
                 <GetScriptBlock>$this.UpdateIdentity.UpdateId</GetScriptBlock>
@@ -54,6 +62,10 @@
     <Type>
         <Name>System.__ComObject#{c1c2f21a-d2f4-4902-b5c6-8a081c19a890}</Name>
         <Members>
+            <AliasProperty>
+                <Name>Name</Name>
+                <ReferencedMemberName>Title</ReferencedMemberName>
+            </AliasProperty>
             <AliasProperty>
                 <Name>RequiresManualInstallation</Name>
                 <ReferencedMemberName>BrowseOnly</ReferencedMemberName>
@@ -84,6 +96,10 @@
         <Name>System.__ComObject#{70cf5c82-8642-42bb-9dbc-0cfd263c6c4f}</Name>
         <Members>
             <AliasProperty>
+                <Name>Name</Name>
+                <ReferencedMemberName>Title</ReferencedMemberName>
+            </AliasProperty>
+            <AliasProperty>
                 <Name>RequiresManualInstallation</Name>
                 <ReferencedMemberName>BrowseOnly</ReferencedMemberName>
             </AliasProperty>
@@ -112,6 +128,10 @@
     <Type>
         <Name>System.__ComObject#{c2bfb780-4539-4132-ab8c-0a8772013ab6}</Name>
         <Members>
+            <AliasProperty>
+                <Name>Name</Name>
+                <ReferencedMemberName>Title</ReferencedMemberName>
+            </AliasProperty>
             <ScriptProperty>
                 <Name>UpdateId</Name>
                 <GetScriptBlock>$this.UpdateIdentity.UpdateId</GetScriptBlock>
